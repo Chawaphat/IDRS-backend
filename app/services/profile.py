@@ -4,8 +4,8 @@ import uuid
 
 from sqlmodel import Session, select
 
+from app.models.dental_chart import DentalChart
 from app.models.profile import Profile, ProfileCreate, ProfileUpdate
-
 
 def create_profile(session: Session, payload: ProfileCreate) -> Profile:
     profile = Profile.model_validate(payload)
@@ -23,6 +23,9 @@ def get_all_profiles(session: Session, skip: int = 0, limit: int = 100) -> list[
     statement = select(Profile).offset(skip).limit(limit)
     return list(session.exec(statement).all())
 
+def get_profile_dental_charts(session: Session, dentist_id: uuid.UUID) -> list[DentalChart]:
+    statement = select(DentalChart).where(DentalChart.dentist_id == dentist_id)
+    return list(session.exec(statement).all())
 
 def update_profile(session: Session, profile: Profile, payload: ProfileUpdate) -> Profile:
     updates = payload.model_dump(exclude_unset=True)

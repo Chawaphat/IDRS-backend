@@ -4,6 +4,7 @@ import uuid
 
 from sqlmodel import Session, select
 
+from app.models.dental_chart import DentalChart
 from app.models.patient import Patient, PatientCreate, PatientUpdate
 
 
@@ -19,6 +20,9 @@ def create_patient(session: Session, payload: PatientCreate) -> Patient:
 def get_patient_by_id(session: Session, patient_id: uuid.UUID) -> Patient | None:
     return session.get(Patient, patient_id)
 
+def get_patient_dental_charts(session: Session, patient_id: uuid.UUID) -> list[DentalChart]:
+    statement = select(DentalChart).where(DentalChart.patient_id == patient_id)
+    return list(session.exec(statement).all())
 
 def get_all_patients(session: Session, skip: int = 0, limit: int = 100) -> list[Patient]:
     statement = select(Patient).offset(skip).limit(limit)

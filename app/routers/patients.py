@@ -6,11 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from app.core.database import get_session
+from app.models.dental_chart import DentalChart
 from app.services.patient import (
     create_patient,
     delete_patient,
     get_all_patients,
     get_patient_by_id,
+    get_patient_dental_charts,
     update_patient,
 )
 from app.models.patient import Patient, PatientCreate, PatientUpdate
@@ -45,6 +47,15 @@ def get_patient_by_id_endpoint(
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
 
+@router.get("/{patient_id}/dental-charts", response_model=list[DentalChart])
+def get_patient_dental_charts_endpoint(
+    patient_id: uuid.UUID,
+    session: Session = Depends(get_session),
+) -> list[DentalChart]:
+    charts = get_patient_dental_charts(session, patient_id)
+    if not charts:
+        raise HTTPException(status_code=404, detail="Dental chart not found")
+    return charts
 
 @router.put("/{patient_id}", response_model=Patient)
 def update_patient_endpoint(

@@ -6,11 +6,13 @@ from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from app.core.database import get_session
+from app.models.dental_chart import DentalChart
 from app.services.profile import (
     create_profile,
     delete_profile,
     get_all_profiles,
     get_profile_by_id,
+    get_profile_dental_charts,
     update_profile,
 )
 from app.models.profile import Profile, ProfileCreate, ProfileUpdate
@@ -45,6 +47,15 @@ def get_profile_by_id_endpoint(
         raise HTTPException(status_code=404, detail="Profile not found")
     return profile
 
+@router.get("/{dentist_id}/dental-charts", response_model=list[DentalChart])
+def get_profile_dental_charts_endpoint(
+    dentist_id: uuid.UUID,
+    session: Session = Depends(get_session),
+) -> list[DentalChart]:
+    charts = get_profile_dental_charts(session, dentist_id)
+    if not charts:
+        raise HTTPException(status_code=404, detail="Dental chart not found")
+    return charts
 
 @router.put("/{profile_id}", response_model=Profile)
 def update_profile_endpoint(
