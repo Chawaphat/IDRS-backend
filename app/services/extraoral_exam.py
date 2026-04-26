@@ -38,6 +38,7 @@ def update_extraoral_exam(
 ) -> ExtraoralExam:
     item = get_extraoral_exam_by_chart_id(session, chart_id)
     
+
     updates = payload.model_dump(exclude_unset=True, exclude_none=True)
     
     for key, value in updates.items():

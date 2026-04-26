@@ -2,10 +2,10 @@ from datetime import date, datetime
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, Column, DateTime, Enum as SAEnum
+from sqlalchemy import Column, DateTime
 from sqlmodel import Field, Relationship, SQLModel
 
-from app.models.enums import AllergyStatusType, PatientExpectationsType
+from app.models.medical_histories import MedicalHistory
 
 if TYPE_CHECKING:
     from app.models.dental_status import DentalStatus
@@ -16,30 +16,14 @@ if TYPE_CHECKING:
     from app.models.patient import Patient
     from app.models.profile import Profile
     from app.models.vdo_evaluation import VdoEvaluation
+    from app.models.medical_histories import MedicalHistory
 
 
 class DentalChartBase(SQLModel):
     patient_id: uuid.UUID = Field(foreign_key="patients.patient_id")
-    dentist_id: uuid.UUID | None = Field(default=None, foreign_key="profiles.id")
+    dentist_id: uuid.UUID = Field(foreign_key="profiles.id")
     record_date: date = Field(default_factory=date.today)
-    chief_complaint: str | None = None
-    present_illness: str | None = None
-    medical_history: str | None = None
-    regular_doctor_visits: bool = False
-    current_medication: str | None = None
-    allergy_status: AllergyStatusType = Field(
-        sa_column=Column(SAEnum(AllergyStatusType, name="allergy_status_type"), nullable=False)
-    )
-    allergy_detail: str | None = None
-    dental_history: str | None = None
-    patient_expectation: list[PatientExpectationsType] | None = Field(
-        default=None,
-        sa_column=Column(ARRAY(SAEnum(PatientExpectationsType, name="patient_expectations_type"))),
-    )
-    patient_expectation_other: str | None = None
-    patient_self_evaluation: str | None = None
-    patient_expected_outcome: str | None = None
-
+    
 
 class DentalChart(DentalChartBase, table=True):
     __tablename__ = "dental_charts"
@@ -50,16 +34,16 @@ class DentalChart(DentalChartBase, table=True):
         sa_column=Column(DateTime(timezone=False), nullable=False),
     )
 
-    # patient คือ - relationship กับ model Patient ซึ่งจะทำให้สามารถเข้าถึงข้อมูล patient ที่เกี่ยวข้องกับ dental_chart นี้ได้ผ่าน dental_chart.patient
     # back_populates คือ - ใช้เพื่อบอกว่า relationship นี้เชื่อมกับ field dental_charts ใน model Patient ซึ่งจะทำให้สามารถเข้าถึง dental_charts ของ patient
     patient: "Patient" = Relationship(back_populates="dental_charts")
     dentist: "Profile" = Relationship(back_populates="dental_charts")
-    extraoral_exams: "ExtraoralExam" = Relationship()
-    esthetic_evaluations: "EstheticEvaluation" = Relationship()
-    vdo_evaluations: "VdoEvaluation" = Relationship()
-    dental_status_records: "DentalStatus" = Relationship(back_populates="chart")
-    occlusal_analyses: "OcclusalAnalysis" = Relationship(back_populates="chart")
-    images: list["ImageManagement"] = Relationship()
+    medical_history: "MedicalHistory" = Relationship(back_populates="chart",sa_relationship_kwargs={"passive_deletes": True})
+    extraoral_exams: "ExtraoralExam" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
+    esthetic_evaluations: "EstheticEvaluation" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
+    vdo_evaluations: "VdoEvaluation" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
+    dental_status_records: "DentalStatus" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
+    occlusal_analyses: "OcclusalAnalysis" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
+    images: list["ImageManagement"] = Relationship(back_populates="chart")
 
 
 class DentalChartCreate(DentalChartBase):
@@ -67,17 +51,7 @@ class DentalChartCreate(DentalChartBase):
 
 
 class DentalChartUpdate(SQLModel):
+    patient_id: uuid.UUID | None = None
     dentist_id: uuid.UUID | None = None
     record_date: date | None = None
-    chief_complaint: str | None = None
-    present_illness: str | None = None
-    medical_history: str | None = None
-    regular_doctor_visits: bool | None = None
-    current_medication: str | None = None
-    allergy_status: AllergyStatusType | None = None
-    allergy_detail: str | None = None
-    dental_history: str | None = None
-    patient_expectation: list[PatientExpectationsType] | None = None
-    patient_expectation_other: str | None = None
-    patient_self_evaluation: str | None = None
-    patient_expected_outcome: str | None = None
+    

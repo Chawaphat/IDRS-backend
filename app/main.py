@@ -5,6 +5,7 @@ from app.routers import (
     ai_detection_results_router,
     dental_charts_router,
     dental_status_router,
+    medical_histories_router,
     esthetic_evaluations_router,
     extraoral_exams_router,
     image_management_router,
@@ -30,12 +31,22 @@ def on_startup() -> None:
 
 app.include_router(profiles_router)
 app.include_router(patients_router)
-app.include_router(dental_charts_router)
+
+app.include_router(
+    dental_charts_router,
+    prefix="/dental-charts", tags=["dental-charts"]
+    )
+
+app.include_router(
+    medical_histories_router,
+    prefix="/dental-charts/{chart_id}/medical-history"
+    )
 
 app.include_router(
     extraoral_exams_router,
     prefix="/dental-charts/{chart_id}/extraoral-exams",
 )
+
 
 app.include_router(esthetic_evaluations_router)
 app.include_router(vdo_evaluations_router)
