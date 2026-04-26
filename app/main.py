@@ -31,7 +31,12 @@ def on_startup() -> None:
 app.include_router(profiles_router)
 app.include_router(patients_router)
 app.include_router(dental_charts_router)
-app.include_router(extraoral_exams_router)
+
+app.include_router(
+    extraoral_exams_router,
+    prefix="/dental-charts/{chart_id}/extraoral-exams",
+)
+
 app.include_router(esthetic_evaluations_router)
 app.include_router(vdo_evaluations_router)
 app.include_router(dental_status_router)

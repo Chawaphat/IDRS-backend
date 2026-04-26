@@ -54,11 +54,11 @@ class DentalChart(DentalChartBase, table=True):
     # back_populates คือ - ใช้เพื่อบอกว่า relationship นี้เชื่อมกับ field dental_charts ใน model Patient ซึ่งจะทำให้สามารถเข้าถึง dental_charts ของ patient
     patient: "Patient" = Relationship(back_populates="dental_charts")
     dentist: "Profile" = Relationship(back_populates="dental_charts")
-    extraoral_exams: list["ExtraoralExam"] = Relationship()
-    esthetic_evaluations: list["EstheticEvaluation"] = Relationship()
-    vdo_evaluations: list["VdoEvaluation"] = Relationship()
-    dental_status_records: list["DentalStatus"] = Relationship(back_populates="chart")
-    occlusal_analyses: list["OcclusalAnalysis"] = Relationship(back_populates="chart")
+    extraoral_exams: "ExtraoralExam" = Relationship()
+    esthetic_evaluations: "EstheticEvaluation" = Relationship()
+    vdo_evaluations: "VdoEvaluation" = Relationship()
+    dental_status_records: "DentalStatus" = Relationship(back_populates="chart")
+    occlusal_analyses: "OcclusalAnalysis" = Relationship(back_populates="chart")
     images: list["ImageManagement"] = Relationship()
 
 
