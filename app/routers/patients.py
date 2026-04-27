@@ -17,7 +17,7 @@ from app.services.patient import (
 )
 from app.models.patient import Patient, PatientCreate, PatientUpdate
 
-router = APIRouter(prefix="/patients", tags=["patients"])
+router = APIRouter()
 
 @router.post("", response_model=Patient, status_code=status.HTTP_201_CREATED)
 def create_patient_endpoint(
@@ -42,20 +42,14 @@ def get_patient_by_id_endpoint(
     patient_id: uuid.UUID,
     session: Session = Depends(get_session),
 ) -> Patient:
-    patient = get_patient_by_id(session, patient_id)
-    if patient is None:
-        raise HTTPException(status_code=404, detail="Patient not found")
-    return patient
+    return get_patient_by_id(session, patient_id)
 
 @router.get("/{patient_id}/dental-charts", response_model=list[DentalChart])
 def get_patient_dental_charts_endpoint(
     patient_id: uuid.UUID,
     session: Session = Depends(get_session),
 ) -> list[DentalChart]:
-    charts = get_patient_dental_charts(session, patient_id)
-    if not charts:
-        raise HTTPException(status_code=404, detail="Dental chart not found")
-    return charts
+    return get_patient_dental_charts(session, patient_id)
 
 @router.put("/{patient_id}", response_model=Patient)
 def update_patient_endpoint(
@@ -63,10 +57,7 @@ def update_patient_endpoint(
     payload: PatientUpdate,
     session: Session = Depends(get_session),
 ) -> Patient:
-    patient = get_patient_by_id(session, patient_id)
-    if patient is None:
-        raise HTTPException(status_code=404, detail="Patient not found")
-    return update_patient(session, patient, payload)
+    return update_patient(session, patient_id, payload)
 
 
 @router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -74,7 +65,4 @@ def delete_patient_endpoint(
     patient_id: uuid.UUID,
     session: Session = Depends(get_session),
 ) -> None:
-    patient = get_patient_by_id(session, patient_id)
-    if patient is None:
-        raise HTTPException(status_code=404, detail="Patient not found")
-    delete_patient(session, patient)
+    delete_patient(session, patient_id)

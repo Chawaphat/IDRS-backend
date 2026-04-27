@@ -17,7 +17,7 @@ from app.services.profile import (
 )
 from app.models.profile import Profile, ProfileCreate, ProfileUpdate
 
-router = APIRouter(prefix="/profiles", tags=["profiles"])
+router = APIRouter()
 
 
 @router.post("", response_model=Profile, status_code=status.HTTP_201_CREATED)
@@ -42,20 +42,14 @@ def get_profile_by_id_endpoint(
     profile_id: uuid.UUID,
     session: Session = Depends(get_session),
 ) -> Profile:
-    profile = get_profile_by_id(session, profile_id)
-    if profile is None:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return profile
+    return get_profile_by_id(session, profile_id)
 
 @router.get("/{dentist_id}/dental-charts", response_model=list[DentalChart])
 def get_profile_dental_charts_endpoint(
     dentist_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> list[DentalChart]:
-    charts = get_profile_dental_charts(session, dentist_id)
-    if not charts:
-        raise HTTPException(status_code=404, detail="Dental chart not found")
-    return charts
+) -> list[DentalChart]:    
+    return get_profile_dental_charts(session, dentist_id)
 
 @router.put("/{profile_id}", response_model=Profile)
 def update_profile_endpoint(
@@ -63,10 +57,7 @@ def update_profile_endpoint(
     payload: ProfileUpdate,
     session: Session = Depends(get_session),
 ) -> Profile:
-    profile = get_profile_by_id(session, profile_id)
-    if profile is None:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    return update_profile(session, profile, payload)
+    return update_profile(session, profile_id, payload)
 
 
 @router.delete("/{profile_id}", status_code=status.HTTP_204_NO_CONTENT)
@@ -74,7 +65,4 @@ def delete_profile_endpoint(
     profile_id: uuid.UUID,
     session: Session = Depends(get_session),
 ) -> None:
-    profile = get_profile_by_id(session, profile_id)
-    if profile is None:
-        raise HTTPException(status_code=404, detail="Profile not found")
-    delete_profile(session, profile)
+    delete_profile(session, profile_id)

@@ -18,7 +18,9 @@ from app.services.medical_histories import (
 from app.models.medical_histories import MedicalHistory, MedicalHistoryCreate, MedicalHistoryUpdate
 
 router = APIRouter()
+admin_router = APIRouter()
 
+# Endpoints for medical histories linked to a dental chart
 @router.post("", response_model=MedicalHistory, status_code=status.HTTP_201_CREATED)
 def create_medical_history_endpoint(
     chart_id: uuid.UUID,
@@ -27,32 +29,14 @@ def create_medical_history_endpoint(
 ) -> MedicalHistory:
     return create_medical_history(session, chart_id, payload)
 
-@router.get("", response_model=MedicalHistory)
+@router.get("", response_model=MedicalHistory, status_code=status.HTTP_200_OK)
 def get_medical_histories_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),
 ) -> MedicalHistory:
     return get_medical_history_by_chart_id(session, chart_id)
 
-@router.get("/all", response_model=list[MedicalHistory])
-def get_all_medical_histories_endpoint(
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=1, le=1000),
-    session: Session = Depends(get_session),
-) -> list[MedicalHistory]:
-    return get_all_medical_histories(session, skip=skip, limit=limit)
-
-@router.get("/{history_id}", response_model=MedicalHistory)
-def get_medical_history_by_id_endpoint(
-    history_id: uuid.UUID,
-    session: Session = Depends(get_session),
-) -> MedicalHistory:
-    item = get_medical_history_by_id(session, history_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="Medical history not found")
-    return item
-
-@router.put("", response_model=dict[str, Any])
+@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
 def update_medical_history_endpoint(
     chart_id: uuid.UUID,
     payload: MedicalHistoryUpdate,
@@ -73,3 +57,22 @@ def delete_medical_history_endpoint(
     session: Session = Depends(get_session),
 ) -> None:
     delete_medical_history(session, chart_id)
+    
+# Admin endpoints for medical histories 
+@admin_router.get("", response_model=list[MedicalHistory])
+def get_all_medical_histories_endpoint(
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=1000),
+    session: Session = Depends(get_session),
+) -> list[MedicalHistory]:
+    return get_all_medical_histories(session, skip=skip, limit=limit)
+
+@admin_router.get("/{history_id}", response_model=MedicalHistory)
+def get_medical_history_by_id_endpoint(
+    history_id: uuid.UUID,
+    session: Session = Depends(get_session),
+) -> MedicalHistory:
+    item = get_medical_history_by_id(session, history_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Medical history not found")
+    return item 
