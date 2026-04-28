@@ -35,9 +35,7 @@ def update_medical_history(
 ) -> MedicalHistory:
     item = get_medical_history_by_chart_id(session, chart_id)
     
-    
     updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    
     for key, value in updates.items():
         setattr(item, key, value)
     

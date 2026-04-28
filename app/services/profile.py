@@ -29,8 +29,6 @@ def get_all_profiles(session: Session, skip: int = 0, limit: int = 100) -> list[
 
 def get_profile_dental_charts(session: Session, dentist_id: uuid.UUID) -> list[DentalChart]:
     statement = select(DentalChart).where(DentalChart.dentist_id == dentist_id)
-    if not session.exec(statement).first():
-        raise HTTPException(status_code=404, detail="Dental charts not found for this profile")
     return list(session.exec(statement).all())
 
 def update_profile(session: Session, profile_id: uuid.UUID, payload: ProfileUpdate) -> Profile:

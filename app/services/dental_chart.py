@@ -21,8 +21,6 @@ def get_dental_chart_by_id(session: Session, chart_id: uuid.UUID) -> DentalChart
 
 def get_all_dental_charts(session: Session, skip: int = 0, limit: int = 100) -> list[DentalChart]:
     statement = select(DentalChart).offset(skip).limit(limit)
-    if not session.exec(statement).first():
-        raise HTTPException(status_code=404, detail="No dental charts found")
     return list(session.exec(statement).all())
 
 def update_dental_chart(session: Session, chart_id: uuid.UUID, payload: DentalChartUpdate) -> DentalChart:

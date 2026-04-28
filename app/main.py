@@ -99,5 +99,13 @@ app.include_router(teeth_router)
 app.include_router(tooth_surfaces_router)
 app.include_router(occlusal_analyses_router)
 app.include_router(occlusal_contacts_router)
-app.include_router(image_management_router)
+
+
+app.include_router(
+    image_management_router,
+    prefix="/dental-charts/{chart_id}/images",
+    tags=["image-management"],
+    )
+
+
 app.include_router(ai_detection_results_router)
