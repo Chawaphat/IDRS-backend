@@ -1,0 +1,92 @@
+from __future__ import annotations
+
+from typing import Any
+import uuid
+
+from sqlmodel import Session, select
+from fastapi import HTTPException
+
+from app.models.occlusal_analysis import (
+    OcclusalAnalysis,
+    OcclusalAnalysisCreate,
+    OcclusalAnalysisUpdate,
+)
+from app.models.occlusal_contact import OcclusalContact
+
+
+def create_occlusal_analysis(session: Session,chart_id: uuid.UUID, payload: OcclusalAnalysisCreate) -> OcclusalAnalysis:
+    item = OcclusalAnalysis.model_validate({**payload.model_dump(), "chart_id": chart_id})
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return item
+
+
+def get_occlusal_analysis_by_id(session: Session, occlusal_id: uuid.UUID) -> OcclusalAnalysis | None:
+    return session.get(OcclusalAnalysis, occlusal_id)
+
+def get_occlusal_analysis_by_chart_id(session: Session, chart_id: uuid.UUID) -> OcclusalAnalysis:
+    statement = select(OcclusalAnalysis).where(OcclusalAnalysis.chart_id == chart_id)
+    item = session.exec(statement).first()
+    if not item:
+        raise HTTPException(status_code=404, detail="Occlusal analysis not found")
+    return item
+
+def get_all_occlusal_analyses(
+    session: Session,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[OcclusalAnalysis]:
+    statement = select(OcclusalAnalysis).offset(skip).limit(limit)
+    return list(session.exec(statement).all())
+
+
+def update_occlusal_analysis(
+    session: Session,
+    chart_id: uuid.UUID,
+    payload: OcclusalAnalysisUpdate,
+) -> OcclusalAnalysis:
+    item = get_occlusal_analysis_by_chart_id(session, chart_id)
+    updates = payload.model_dump(exclude_unset=True,exclude_none=True)
+    for key, value in updates.items():
+        setattr(item, key, value)
+    session.add(item)
+    session.commit()
+    session.refresh(item)
+    return item
+
+
+def delete_occlusal_analysis(session: Session, chart_id: uuid.UUID) -> None:
+    item = get_occlusal_analysis_by_chart_id(session, chart_id)
+    session.delete(item)
+    session.commit()
+
+
+def get_occlusal_analysis_record(session: Session, chart_id: uuid.UUID) -> dict[str, Any] | None:
+    occlusal_stmt = select(OcclusalAnalysis).where(OcclusalAnalysis.chart_id == chart_id)
+    occlusal = session.exec(occlusal_stmt).first()
+    if occlusal is None:
+        return None
+
+    contacts_stmt = select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
+    contacts = list(session.exec(contacts_stmt).all())
+
+    return {
+        "occlusal_id": occlusal.occlusal_id,
+        "chart_id": occlusal.chart_id,
+        "right_molar": occlusal.right_molar,
+        "left_molar": occlusal.left_molar,
+        "overlap_horizontal": occlusal.overlap_horizontal,
+        "overlap_vertical": occlusal.overlap_vertical,
+        "anterior_slide": occlusal.anterior_slide,
+        "lateral_slide": occlusal.lateral_slide,
+        "contacts": [
+            {
+                "contact_id": contact.contact_id,
+                "contact_type": contact.contact_type,
+                "upper_tooth": contact.upper_tooth,
+                "lower_tooth": contact.lower_tooth,
+            }
+            for contact in contacts
+        ],
+    }

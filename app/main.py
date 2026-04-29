@@ -13,6 +13,7 @@ from app.routers import (
     extraoral_exams_admin_router,
     image_management_router,
     occlusal_analyses_router,
+    occlusal_analyses_admin_router,
     occlusal_contacts_router,
     patients_router,
     profiles_router,
@@ -97,7 +98,18 @@ app.include_router(
 app.include_router(dental_status_router)
 app.include_router(teeth_router)
 app.include_router(tooth_surfaces_router)
-app.include_router(occlusal_analyses_router)
+
+app.include_router(
+    occlusal_analyses_router,
+    prefix="/dental-charts/{chart_id}/occlusal-analysis",
+    tags=["occlusal-analysis"],)
+
+app.include_router(
+    occlusal_analyses_admin_router,
+    prefix="/occlusal-analysis",
+    tags=["occlusal-analysis-admin"],
+)
+
 app.include_router(occlusal_contacts_router)
 
 
@@ -108,4 +120,8 @@ app.include_router(
     )
 
 
-app.include_router(ai_detection_results_router)
+app.include_router(
+    ai_detection_results_router,
+    prefix="/ai-detection-results",
+    tags=["ai-detection-results"],
+    )

@@ -10,7 +10,10 @@ from app.routers.extraoral_exams import (
     admin_router as extraoral_exams_admin_router,
 )
 from app.routers.image_management import router as image_management_router
-from app.routers.occlusal_analyses import router as occlusal_analyses_router
+from app.routers.occlusal_analyses import (
+    router as occlusal_analyses_router,
+    admin_router as occlusal_analyses_admin_router)
+
 from app.routers.occlusal_contacts import router as occlusal_contacts_router
 from app.routers.patients import router as patients_router
 from app.routers.profiles import router as profiles_router
@@ -38,6 +41,7 @@ __all__ = [
 	"extraoral_exams_admin_router",
 	"image_management_router",
 	"occlusal_analyses_router",
+ 	"occlusal_analyses_admin_router",
 	"occlusal_contacts_router",
 	"patients_router",
 	"profiles_router",

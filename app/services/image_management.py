@@ -68,20 +68,15 @@ from concurrent.futures import ThreadPoolExecutor
 def get_all_image_management_signed(session: Session, chart_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[dict]:
     statement = select(ImageManagement).where(ImageManagement.chart_id == chart_id).offset(skip).limit(limit)
     items = list(session.exec(statement).all())
-    # # แปลง path → signed URL ก่อน return
-    # result = []
-    # for item in items:
-    #     item_dict = item.model_dump()
-    #     path = f"{item.image_type}/{item.image_url}"
-    #     item_dict["image_url"] = get_signed_url(path)
-    #     result.append(item_dict)
+    
     with ThreadPoolExecutor(max_workers=5) as executor:
         result = list(executor.map(enrich_item, items))
         
     return result
 
+# Parallelize the enrichment of items to generate signed URLs faster
 def enrich_item(item):
     item_dict = item.model_dump()
-    path = f"{item.image_type}/{item.image_url}"
+    path = f"{item.image_type}/{item.image_file}"
     item_dict["image_url"] = get_signed_url(path)
     return item_dict

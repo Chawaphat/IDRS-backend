@@ -9,12 +9,11 @@ from app.models.enums import ImageCategory
 
 if TYPE_CHECKING:
     from app.models.dental_chart import DentalChart
-    from app.models.patient import Patient
-
 
 class ImageManagementBase(SQLModel):
     image_type: ImageCategory 
     image_url: str
+    image_file: str
     description: str | None = None
 
 
@@ -41,4 +40,5 @@ class ImageManagementCreate(ImageManagementBase):
 class ImageManagementUpdate(SQLModel):
     image_type: ImageCategory | None = None
     image_url: str | None = None
+    image_file: str | None = None
     description: str | None = None
