@@ -1,9 +1,11 @@
 from __future__ import annotations
 
+import os
 import uuid
 
 from fastapi import HTTPException
 from sqlmodel import Session, select
+from app.core.supabase import get_supabase
 
 from app.models.image_management import ImageManagement, ImageManagementCreate, ImageManagementUpdate
 
@@ -48,3 +50,38 @@ def delete_image_management(session: Session, image_id: uuid.UUID) -> None:
     item = get_image_management_by_id(session, image_id)
     session.delete(item)
     session.commit()
+
+
+EXPIRES_IN = 86400  # 1 Days
+
+def get_signed_url(image_path: str) -> str:
+    SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET")
+    supabase = get_supabase()
+    result = supabase.storage.from_(SUPABASE_BUCKET).create_signed_url(
+        image_path, EXPIRES_IN
+    )
+    if not result or "signedURL" not in result:
+        raise Exception(f"Failed to generate signed URL for {image_path}")
+    return result["signedURL"]
+
+from concurrent.futures import ThreadPoolExecutor
+def get_all_image_management_signed(session: Session, chart_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[dict]:
+    statement = select(ImageManagement).where(ImageManagement.chart_id == chart_id).offset(skip).limit(limit)
+    items = list(session.exec(statement).all())
+    # # แปลง path → signed URL ก่อน return
+    # result = []
+    # for item in items:
+    #     item_dict = item.model_dump()
+    #     path = f"{item.image_type}/{item.image_url}"
+    #     item_dict["image_url"] = get_signed_url(path)
+    #     result.append(item_dict)
+    with ThreadPoolExecutor(max_workers=5) as executor:
+        result = list(executor.map(enrich_item, items))
+        
+    return result
+
+def enrich_item(item):
+    item_dict = item.model_dump()
+    path = f"{item.image_type}/{item.image_url}"
+    item_dict["image_url"] = get_signed_url(path)
+    return item_dict

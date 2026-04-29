@@ -10,13 +10,13 @@ from app.services.image_management import (
     create_image_management,
     delete_image_management,
     get_all_image_management,
+    get_all_image_management_signed,
     get_image_management_by_id,
     update_image_management,
 )
 from app.models.image_management import ImageManagement, ImageManagementCreate, ImageManagementUpdate
 
 router = APIRouter()
-
 
 @router.post("", response_model=ImageManagement, status_code=status.HTTP_201_CREATED)
 def create_image_management_endpoint(
@@ -36,6 +36,14 @@ def get_image_management_endpoint(
 ) -> list[ImageManagement]:
     return get_all_image_management(session, chart_id=chart_id, skip=skip, limit=limit)
 
+@router.get("/signed-url", response_model=list[dict])
+def get_image_management_signed_endpoint(
+    chart_id: uuid.UUID,
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=1000),
+    session: Session = Depends(get_session),
+) -> list[dict]:
+    return get_all_image_management_signed(session, chart_id=chart_id, skip=skip, limit=limit)
 
 @router.get("/{image_id}", response_model=ImageManagement)
 def get_image_management_by_id_endpoint(
@@ -60,3 +68,5 @@ def delete_image_management_endpoint(
     session: Session = Depends(get_session),
 ) -> None:
     return delete_image_management(session, image_id)
+
+
