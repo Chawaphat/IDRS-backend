@@ -48,13 +48,11 @@ from app.services.occlusal_analysis import (
     get_all_occlusal_analyses,
     get_occlusal_analysis_by_id,
     update_occlusal_analysis,
+    get_occlusal_analysis_by_chart_id
 )
 from app.services.occlusal_contact import (
-    create_occlusal_contact,
+    create_and_replace_occlusal_contacts,
     delete_occlusal_contact,
-    get_all_occlusal_contacts,
-    get_occlusal_contact_by_id,
-    update_occlusal_contact,
 )
 from app.services.patient import (
     create_patient,
@@ -129,11 +127,9 @@ __all__ = [
     "get_all_occlusal_analyses",
     "get_occlusal_analysis_by_id",
     "update_occlusal_analysis",
-    "create_occlusal_contact",
+    "create_and_replace_occlusal_contacts",
     "delete_occlusal_contact",
-    "get_all_occlusal_contacts",
-    "get_occlusal_contact_by_id",
-    "update_occlusal_contact",
+    "get_occlusal_analysis_by_chart_id"
     "create_patient",
     "delete_patient",
     "get_all_patients",
@@ -164,4 +160,7 @@ __all__ = [
     "get_ai_detection_result_by_id",
     "get_all_ai_detection_results",
     "update_ai_detection_result",
+    "get_occlusal_analysis_by_chart_id",
+    "create_and_replace_occlusal_contacts",
+    "delete_occlusal_contact"
 ]

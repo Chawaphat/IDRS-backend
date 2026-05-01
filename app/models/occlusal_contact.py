@@ -35,3 +35,6 @@ class OcclusalContactUpdate(SQLModel):
     contact_type: ContactType | None = None
     upper_tooth: int | None = None
     lower_tooth: int | None = None
+
+class OcclusalContactBulkCreate(SQLModel):
+    contacts: list[OcclusalContactCreate]

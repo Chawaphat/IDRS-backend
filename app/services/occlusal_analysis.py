@@ -12,6 +12,8 @@ from app.models.occlusal_analysis import (
     OcclusalAnalysisUpdate,
 )
 from app.models.occlusal_contact import OcclusalContact
+from app.models.enums import ContactType
+
 
 
 def create_occlusal_analysis(session: Session,chart_id: uuid.UUID, payload: OcclusalAnalysisCreate) -> OcclusalAnalysis:
@@ -63,14 +65,20 @@ def delete_occlusal_analysis(session: Session, chart_id: uuid.UUID) -> None:
 
 
 def get_occlusal_analysis_record(session: Session, chart_id: uuid.UUID) -> dict[str, Any] | None:
-    occlusal_stmt = select(OcclusalAnalysis).where(OcclusalAnalysis.chart_id == chart_id)
-    occlusal = session.exec(occlusal_stmt).first()
-    if occlusal is None:
-        return None
+    occlusal = get_occlusal_analysis_by_chart_id(session, chart_id)  # ← ใช้ function เดิมที่มี 404 อยู่แล้ว ไม่ต้อง query ซ้ำ
 
-    contacts_stmt = select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
-    contacts = list(session.exec(contacts_stmt).all())
+    contacts = list(session.exec(
+        select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
+    ).all())
 
+    grouped: dict[str, list] = {ct.value: [] for ct in ContactType}
+    for contact in contacts:
+        grouped[contact.contact_type.value].append({
+            "contact_id": contact.contact_id,
+            "upper_tooth": contact.upper_tooth,
+            "lower_tooth": contact.lower_tooth,
+        })
+        
     return {
         "occlusal_id": occlusal.occlusal_id,
         "chart_id": occlusal.chart_id,
@@ -80,13 +88,5 @@ def get_occlusal_analysis_record(session: Session, chart_id: uuid.UUID) -> dict[
         "overlap_vertical": occlusal.overlap_vertical,
         "anterior_slide": occlusal.anterior_slide,
         "lateral_slide": occlusal.lateral_slide,
-        "contacts": [
-            {
-                "contact_id": contact.contact_id,
-                "contact_type": contact.contact_type,
-                "upper_tooth": contact.upper_tooth,
-                "lower_tooth": contact.lower_tooth,
-            }
-            for contact in contacts
-        ],
+        "contacts": grouped
     }

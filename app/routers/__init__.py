@@ -14,7 +14,7 @@ from app.routers.occlusal_analyses import (
     router as occlusal_analyses_router,
     admin_router as occlusal_analyses_admin_router)
 
-from app.routers.occlusal_contacts import router as occlusal_contacts_router
+from app.routers.occlusal_contact import router as occlusal_contacts_router
 from app.routers.patients import router as patients_router
 from app.routers.profiles import router as profiles_router
 from app.routers.teeth import router as teeth_router

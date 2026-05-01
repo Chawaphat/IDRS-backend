@@ -110,7 +110,11 @@ app.include_router(
     tags=["occlusal-analysis-admin"],
 )
 
-app.include_router(occlusal_contacts_router)
+app.include_router(
+    occlusal_contacts_router,
+    prefix="/dental-charts/{chart_id}/occlusal-contacts",
+    tags=["occlusal-contacts"],
+    )
 
 
 app.include_router(
