@@ -4,7 +4,7 @@ from app.models.ai_detection_result import (
     AIDetectionResultUpdate,
 )
 from app.models.dental_chart import DentalChart, DentalChartCreate, DentalChartUpdate
-from app.models.dental_status import DentalStatus, DentalStatusCreate, DentalStatusUpdate
+from app.models.dental_status import DentalStatus
 from app.models.esthetic_evaluation import (
     EstheticEvaluation,
     EstheticEvaluationCreate,
@@ -28,8 +28,8 @@ from app.models.occlusal_contact import (
 )
 from app.models.patient import Patient, PatientCreate, PatientUpdate
 from app.models.profile import Profile, ProfileCreate, ProfileUpdate
-from app.models.tooth import Tooth, ToothCreate, ToothUpdate
-from app.models.tooth_surface import ToothSurface, ToothSurfaceCreate, ToothSurfaceUpdate
+from app.models.tooth import Tooth
+from app.models.tooth_surface import ToothSurface
 from app.models.vdo_evaluation import VdoEvaluation, VdoEvaluationCreate, VdoEvaluationUpdate
 from app.models.medical_histories import MedicalHistory, MedicalHistoryCreate, MedicalHistoryUpdate
 
@@ -41,8 +41,6 @@ __all__ = [
     "DentalChartCreate",
     "DentalChartUpdate",
     "DentalStatus",
-    "DentalStatusCreate",
-    "DentalStatusUpdate",
     "EstheticEvaluation",
     "EstheticEvaluationCreate",
     "EstheticEvaluationUpdate",
@@ -65,11 +63,7 @@ __all__ = [
     "ProfileCreate",
     "ProfileUpdate",
     "Tooth",
-    "ToothCreate",
-    "ToothUpdate",
     "ToothSurface",
-    "ToothSurfaceCreate",
-    "ToothSurfaceUpdate",
     "VdoEvaluation",
     "VdoEvaluationCreate",
     "VdoEvaluationUpdate",

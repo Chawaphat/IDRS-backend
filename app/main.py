@@ -17,8 +17,6 @@ from app.routers import (
     occlusal_contacts_router,
     patients_router,
     profiles_router,
-    teeth_router,
-    tooth_surfaces_router,
     vdo_evaluations_router,
     vdo_evaluations_admin_router,
 )
@@ -95,9 +93,11 @@ app.include_router(
     prefix="/vdo-evaluation",
     tags=["vdo-evaluation-admin"],
 )
-app.include_router(dental_status_router)
-app.include_router(teeth_router)
-app.include_router(tooth_surfaces_router)
+app.include_router(
+    dental_status_router,
+    prefix="/dental-charts/{chart_id}/dental-status",
+    tags=["dental-status"],
+    )
 
 app.include_router(
     occlusal_analyses_router,

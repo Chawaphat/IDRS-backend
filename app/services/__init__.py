@@ -1,3 +1,11 @@
+from app.services.ai_detection_result import (
+    create_ai_detection_result,
+    delete_ai_detection_result,
+    get_ai_detection_result_by_id,
+    get_ai_detection_result_by_image_id,
+    get_all_ai_detection_results,
+    update_ai_detection_result,
+)
 from app.services.dental_chart import (
     create_dental_chart,
     delete_dental_chart,
@@ -6,49 +14,50 @@ from app.services.dental_chart import (
     update_dental_chart,
 )
 from app.services.dental_status import (
-    create_dental_status,
+    create_or_replace_dental_status,
     delete_dental_status,
-    get_all_dental_status,
-    get_dental_status_by_id,
-    update_dental_status,
-)
-
-from app.services.medical_histories import (
-    create_medical_history,
-    delete_medical_history,
-    get_all_medical_histories,
-    get_medical_history_by_id,
-    update_medical_history,
-)
-
-from app.services.extraoral_exam import (
-    create_extraoral_exam,
-    delete_extraoral_exam,
-    get_all_extraoral_exams,
-    get_extraoral_exam_by_id,
-    update_extraoral_exam,
+    get_dental_status_by_chart_id,
 )
 from app.services.esthetic_evaluation import (
     create_esthetic_evaluation,
     delete_esthetic_evaluation,
     get_all_esthetic_evaluations,
+    get_esthetic_evaluation_by_chart_id,
     get_esthetic_evaluation_by_id,
     update_esthetic_evaluation,
+)
+from app.services.extraoral_exam import (
+    create_extraoral_exam,
+    delete_extraoral_exam,
+    get_all_extraoral_exams,
+    get_extraoral_exam_by_chart_id,
+    get_extraoral_exam_by_id,
+    update_extraoral_exam,
 )
 from app.services.image_management import (
     create_image_management,
     delete_image_management,
     get_all_image_management,
+    get_all_image_management_signed,
     get_image_management_by_id,
+    get_signed_url,
     update_image_management,
 )
+from app.services.medical_histories import (
+    create_medical_history,
+    delete_medical_history,
+    get_all_medical_histories,
+    get_medical_history_by_chart_id,
+    get_medical_history_by_id,
+    update_medical_history,
+)
 from app.services.occlusal_analysis import (
-    create_occlusal_analysis,
     delete_occlusal_analysis,
     get_all_occlusal_analyses,
+    get_occlusal_analysis_by_chart_id,
     get_occlusal_analysis_by_id,
-    update_occlusal_analysis,
-    get_occlusal_analysis_by_chart_id
+    get_occlusal_analysis_record,
+    upsert_occlusal_analysis,
 )
 from app.services.occlusal_contact import (
     create_and_replace_occlusal_contacts,
@@ -59,6 +68,7 @@ from app.services.patient import (
     delete_patient,
     get_all_patients,
     get_patient_by_id,
+    get_patient_dental_charts,
     update_patient,
 )
 from app.services.profile import (
@@ -66,79 +76,78 @@ from app.services.profile import (
     delete_profile,
     get_all_profiles,
     get_profile_by_id,
+    get_profile_dental_charts,
     update_profile,
 )
-from app.services.tooth import create_tooth, delete_tooth, get_all_teeth, get_tooth_by_id, update_tooth
-from app.services.tooth_surface import (
-    create_tooth_surface,
-    delete_tooth_surface,
-    get_all_tooth_surfaces,
-    get_tooth_surface_by_id,
-    update_tooth_surface,
-)
+
 from app.services.vdo_evaluation import (
     create_vdo_evaluation,
     delete_vdo_evaluation,
     get_all_vdo_evaluations,
+    get_vdo_evaluation_by_chart_id,
     get_vdo_evaluation_by_id,
     update_vdo_evaluation,
 )
-from app.services.ai_detection_result import (
-    create_ai_detection_result,
-    delete_ai_detection_result,
-    get_ai_detection_result_by_id,
-    get_all_ai_detection_results,
-    update_ai_detection_result,
-)
 
 __all__ = [
+    "create_ai_detection_result",
+    "delete_ai_detection_result",
+    "get_ai_detection_result_by_id",
+    "get_ai_detection_result_by_image_id",
+    "get_all_ai_detection_results",
+    "update_ai_detection_result",
     "create_dental_chart",
     "delete_dental_chart",
     "get_all_dental_charts",
     "get_dental_chart_by_id",
     "update_dental_chart",
-    "create_dental_status",
+    "create_or_replace_dental_status",
     "delete_dental_status",
-    "get_all_dental_status",
-    "get_dental_status_by_id",
-    "update_dental_status",
-    "create_medical_history",
-    "delete_medical_history",
-    "get_all_medical_histories",
-    "get_medical_history_by_id",
-    "update_medical_history",  
-    "create_extraoral_exam",
-    "delete_extraoral_exam",
-    "get_all_extraoral_exams",
-    "get_extraoral_exam_by_id",
-    "update_extraoral_exam",
+    "get_dental_status_by_chart_id",
     "create_esthetic_evaluation",
     "delete_esthetic_evaluation",
     "get_all_esthetic_evaluations",
+    "get_esthetic_evaluation_by_chart_id",
     "get_esthetic_evaluation_by_id",
     "update_esthetic_evaluation",
+    "create_extraoral_exam",
+    "delete_extraoral_exam",
+    "get_all_extraoral_exams",
+    "get_extraoral_exam_by_chart_id",
+    "get_extraoral_exam_by_id",
+    "update_extraoral_exam",
     "create_image_management",
     "delete_image_management",
     "get_all_image_management",
+    "get_all_image_management_signed",
     "get_image_management_by_id",
+    "get_signed_url",
     "update_image_management",
-    "create_occlusal_analysis",
+    "create_medical_history",
+    "delete_medical_history",
+    "get_all_medical_histories",
+    "get_medical_history_by_chart_id",
+    "get_medical_history_by_id",
+    "update_medical_history",
     "delete_occlusal_analysis",
     "get_all_occlusal_analyses",
+    "get_occlusal_analysis_by_chart_id",
     "get_occlusal_analysis_by_id",
-    "update_occlusal_analysis",
+    "get_occlusal_analysis_record",
+    "upsert_occlusal_analysis",
     "create_and_replace_occlusal_contacts",
     "delete_occlusal_contact",
-    "get_occlusal_analysis_by_chart_id"
     "create_patient",
     "delete_patient",
     "get_all_patients",
     "get_patient_by_id",
+    "get_patient_dental_charts",
     "update_patient",
     "create_profile",
     "delete_profile",
     "get_all_profiles",
     "get_profile_by_id",
+    "get_profile_dental_charts",
     "update_profile",
     "create_tooth",
     "delete_tooth",
@@ -153,14 +162,7 @@ __all__ = [
     "create_vdo_evaluation",
     "delete_vdo_evaluation",
     "get_all_vdo_evaluations",
+    "get_vdo_evaluation_by_chart_id",
     "get_vdo_evaluation_by_id",
     "update_vdo_evaluation",
-    "create_ai_detection_result",
-    "delete_ai_detection_result",
-    "get_ai_detection_result_by_id",
-    "get_all_ai_detection_results",
-    "update_ai_detection_result",
-    "get_occlusal_analysis_by_chart_id",
-    "create_and_replace_occlusal_contacts",
-    "delete_occlusal_contact"
 ]

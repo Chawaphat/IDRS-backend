@@ -3,34 +3,32 @@ from __future__ import annotations
 from typing import Any
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, Query , status
 from sqlmodel import Session
 
 from app.core.database import get_session
 from app.services.occlusal_analysis import (
-    create_occlusal_analysis,
     delete_occlusal_analysis,
     get_all_occlusal_analyses,
     get_occlusal_analysis_by_id,
     get_occlusal_analysis_record,
-    update_occlusal_analysis,
+    upsert_occlusal_analysis,
 )
 from app.models.occlusal_analysis import (
     OcclusalAnalysis,
     OcclusalAnalysisCreate,
-    OcclusalAnalysisUpdate,
 )
 
 router = APIRouter()
 admin_router = APIRouter()
 
-@router.post("", response_model=OcclusalAnalysis, status_code=status.HTTP_201_CREATED)
-def create_occlusal_analysis_endpoint(
+@router.put("", response_model=OcclusalAnalysis, status_code=status.HTTP_201_CREATED)
+def upsert_occlusal_analysis_endpoint(
     chart_id: uuid.UUID,
     payload: OcclusalAnalysisCreate,
     session: Session = Depends(get_session),
 ) -> OcclusalAnalysis:
-    return create_occlusal_analysis(session, chart_id, payload)
+    return upsert_occlusal_analysis(session, chart_id, payload)
 
 @router.get("", response_model=dict[str, Any])
 def get_occlusal_analysis_record_endpoint(
@@ -39,20 +37,6 @@ def get_occlusal_analysis_record_endpoint(
 ) -> dict[str, Any]:
     result = get_occlusal_analysis_record(session, chart_id)
     return result
-
-@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
-def update_occlusal_analysis_endpoint(
-    chart_id: uuid.UUID,
-    payload: OcclusalAnalysisUpdate,
-    session: Session = Depends(get_session),
-) -> dict[str, Any]:
-    updates= payload.model_dump(exclude_unset=True, exclude_none=True)
-    item = update_occlusal_analysis(session, chart_id, payload)
-    return {
-        "occlusal_id": item.occlusal_id,
-        "chart_id": item.chart_id,
-        **updates,
-    }
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 def delete_occlusal_analysis_endpoint(

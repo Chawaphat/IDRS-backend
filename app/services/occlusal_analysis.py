@@ -9,21 +9,26 @@ from fastapi import HTTPException
 from app.models.occlusal_analysis import (
     OcclusalAnalysis,
     OcclusalAnalysisCreate,
-    OcclusalAnalysisUpdate,
 )
 from app.models.occlusal_contact import OcclusalContact
 from app.models.enums import ContactType
 
-
-
-def create_occlusal_analysis(session: Session,chart_id: uuid.UUID, payload: OcclusalAnalysisCreate) -> OcclusalAnalysis:
-    item = OcclusalAnalysis.model_validate({**payload.model_dump(), "chart_id": chart_id})
-    session.add(item)
+def upsert_occlusal_analysis(session: Session, chart_id: uuid.UUID, payload: OcclusalAnalysisCreate) -> OcclusalAnalysis:
+    statement = select(OcclusalAnalysis).where(OcclusalAnalysis.chart_id == chart_id)
+    occlusal = session.exec(statement).first()
+    
+    if occlusal:
+        updates = payload.model_dump(exclude_unset=True)
+        for key, value in updates.items():
+            setattr(occlusal, key, value)
+    else:
+        occlusal = OcclusalAnalysis(chart_id=chart_id, **payload.model_dump())
+    
+    session.add(occlusal)
     session.commit()
-    session.refresh(item)
-    return item
-
-
+    session.refresh(occlusal)
+    return occlusal
+        
 def get_occlusal_analysis_by_id(session: Session, occlusal_id: uuid.UUID) -> OcclusalAnalysis | None:
     return session.get(OcclusalAnalysis, occlusal_id)
 
@@ -41,22 +46,6 @@ def get_all_occlusal_analyses(
 ) -> list[OcclusalAnalysis]:
     statement = select(OcclusalAnalysis).offset(skip).limit(limit)
     return list(session.exec(statement).all())
-
-
-def update_occlusal_analysis(
-    session: Session,
-    chart_id: uuid.UUID,
-    payload: OcclusalAnalysisUpdate,
-) -> OcclusalAnalysis:
-    item = get_occlusal_analysis_by_chart_id(session, chart_id)
-    updates = payload.model_dump(exclude_unset=True,exclude_none=True)
-    for key, value in updates.items():
-        setattr(item, key, value)
-    session.add(item)
-    session.commit()
-    session.refresh(item)
-    return item
-
 
 def delete_occlusal_analysis(session: Session, chart_id: uuid.UUID) -> None:
     item = get_occlusal_analysis_by_chart_id(session, chart_id)

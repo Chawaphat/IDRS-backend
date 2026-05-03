@@ -1,6 +1,5 @@
 from __future__ import annotations
 
-from typing import Any
 import uuid
 
 from fastapi import APIRouter, Depends, status
@@ -8,9 +7,8 @@ from sqlmodel import Session
 
 from app.core.database import get_session
 from app.services.occlusal_contact import (
-    
     delete_occlusal_contact,
-    create_and_replace_occlusal_contacts
+    create_and_replace_occlusal_contacts,
 )
 from app.models.occlusal_contact import OcclusalContact, OcclusalContactBulkCreate
 
