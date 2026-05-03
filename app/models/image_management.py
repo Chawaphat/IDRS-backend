@@ -12,8 +12,8 @@ if TYPE_CHECKING:
 
 class ImageManagementBase(SQLModel):
     image_type: ImageCategory 
-    image_url: str
-    image_file: str
+    image_url: str | None = None
+    image_file: str | None = None
     description: str | None = None
 
 
