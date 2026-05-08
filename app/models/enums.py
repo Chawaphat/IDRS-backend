@@ -4,6 +4,7 @@ from enum import Enum
 class UserRole(str, Enum):
     dentist = "dentist"
     assistant = "assistant"
+    admin = "admin"
 
 
 class AllergyStatusType(str, Enum):

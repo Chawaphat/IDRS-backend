@@ -8,9 +8,12 @@ SQLAlchemy>=2.0.0
 psycopg2-binary>=2.9.9
 supabase>=2.0.0
 
-# Authentication & Security
-python-jose[cryptography]>=3.3.0
-passlib[bcrypt]>=1.7.4
+# Authentication & Security (เปลี่ยนมาใช้ PyJWT)
+pyjwt>=2.8.0
+cryptography>=42.0.0
+
+# HTTP Client (สำหรับเรียก API ภายนอก)
+requests>=2.31.0
 
 # Environment & Utilities
 python-dotenv>=1.0.1
