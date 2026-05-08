@@ -14,6 +14,7 @@ from app.services.patient import (
     get_patient_by_id,
     get_patient_dental_charts,
     update_patient,
+    search_patients,
 )
 from app.models.patient import Patient, PatientCreate, PatientUpdate
 
@@ -21,12 +22,10 @@ router = APIRouter()
 
 @router.post("", response_model=Patient, status_code=status.HTTP_201_CREATED)
 def create_patient_endpoint(
-    # Client จะส่งข้อมูลคนไข้มาในรูปแบบ JSON ซึ่งจะถูกแปลงเป็น instance ของ PatientCreate โดย FastAPI อัตโนมัติผ่านการใช้ Pydantic model ที่เราได้กำหนดไว้ใน PatientCreate
     payload: PatientCreate,
     session: Session = Depends(get_session),
 ) -> Patient:
     return create_patient(session, payload)
-# -> Patient คือ - บอกว่า function นี้จะ return object ที่เป็น instance ของ Patient model ซึ่งช่วยให้ FastAPI สามารถสร้าง schema สำหรับ response ได้อัตโนมัติ และยังช่วยในการตรวจสอบ type ของข้อมูลที่ return ว่าตรงกับที่กำหนดไว้หรือไม่
 
 @router.get("", response_model=list[Patient])
 def get_patients_endpoint(
@@ -36,6 +35,14 @@ def get_patients_endpoint(
 ) -> list[Patient]:
     return get_all_patients(session, skip=skip, limit=limit)
 
+@router.get("/search", response_model=list[Patient])
+def search_patients_endpoint(
+    query: str = Query(..., min_length=1, description="Search by name or HN number"),
+    skip: int = Query(default=0, ge=0),
+    limit: int = Query(default=100, ge=1, le=500),
+    session: Session = Depends(get_session),
+):
+    return search_patients(session, query=query, skip=skip, limit=limit)
 
 @router.get("/{patient_id}", response_model=Patient)
 def get_patient_by_id_endpoint(

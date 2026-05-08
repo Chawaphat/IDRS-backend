@@ -3,7 +3,7 @@ from __future__ import annotations
 import uuid
 
 from fastapi import HTTPException
-from sqlmodel import Session, select
+from sqlmodel import Session, select ,or_
 
 from app.models.dental_chart import DentalChart
 from app.models.patient import Patient, PatientCreate, PatientUpdate
@@ -50,3 +50,23 @@ def delete_patient(session: Session, patient_id: uuid.UUID) -> None:
     patient = get_patient_by_id(session, patient_id)
     session.delete(patient)
     session.commit()
+
+def search_patients(
+    session: Session,
+    query: str,
+    skip: int = 0,
+    limit: int = 100,
+) -> list[Patient]:
+    search_term = f"%{query}%"
+    statement = (
+        select(Patient)
+        .where(
+            or_(
+                Patient.name.ilike(search_term),
+                Patient.hn_number.ilike(search_term),
+            )
+        )
+        .offset(skip)
+        .limit(limit)
+    )
+    return list(session.exec(statement).all())
