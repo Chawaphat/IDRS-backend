@@ -4,7 +4,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
-from app.core.security import get_current_profile ,require_admin , require_profile_owner
+from app.core.authen import get_current_profile ,require_admin , require_profile_owner
 
 from app.core.database import get_session
 from app.models.dental_chart import DentalChart
