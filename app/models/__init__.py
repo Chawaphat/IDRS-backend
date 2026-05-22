@@ -28,8 +28,14 @@ from app.models.occlusal_contact import (
 )
 from app.models.patient import Patient, PatientCreate, PatientUpdate
 from app.models.profile import Profile, ProfileCreate, ProfileUpdate
-from app.models.tooth import Tooth
-from app.models.tooth_surface import ToothSurface
+from app.models.tooth_record import ToothRecord
+from app.models.tooth_edentulous import ToothEdentulous
+from app.models.tooth_caries import ToothCaries
+from app.models.tooth_filling import ToothFilling
+from app.models.tooth_periodontal import ToothPeriodontal
+from app.models.tooth_vitality import ToothVitality
+from app.models.tooth_restoration import ToothRestoration
+from app.models.tooth_implant import ToothImplant
 from app.models.vdo_evaluation import VdoEvaluation, VdoEvaluationCreate, VdoEvaluationUpdate
 from app.models.medical_histories import MedicalHistory, MedicalHistoryCreate, MedicalHistoryUpdate
 
@@ -62,8 +68,14 @@ __all__ = [
     "Profile",
     "ProfileCreate",
     "ProfileUpdate",
-    "Tooth",
-    "ToothSurface",
+    "ToothRecord",
+    "ToothEdentulous",
+    "ToothCaries",
+    "ToothFilling",
+    "ToothPeriodontal",
+    "ToothVitality",
+    "ToothRestoration",
+    "ToothImplant",
     "VdoEvaluation",
     "VdoEvaluationCreate",
     "VdoEvaluationUpdate",

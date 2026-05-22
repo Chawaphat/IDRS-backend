@@ -98,15 +98,6 @@ class BiteType(str, Enum):
     edge_to_edge = "edge_to_edge"
     crossbite = "crossbite"
 
-
-class SurfaceEnum(str, Enum):
-    B = "B"
-    O = "O"
-    M = "M"
-    L = "L"
-    D = "D"
-
-
 class CariesType(str, Enum):
     none = "none"
     caries = "caries"
@@ -132,3 +123,82 @@ class ImageCategory(str, Enum):
     intraoral = "intraoral"
     panoramic_xray = "panoramic_xray"
     other = "other"
+
+
+class ToothTypeEnum(str, Enum):
+    edentulous = "edentulous"
+    primary = "primary"
+    permanent = "permanent"
+    implant = "implant"
+
+class EdentulousTypeEnum(str, Enum):
+    missing = "missing"
+    extraction = "extraction"
+    embedded = "embedded"
+    impacted = "impacted"
+
+class CariesDepthEnum(str, Enum):
+    enamel = "enamel"
+    dentine = "dentine"
+    pulp = "pulp"
+
+class ToothSurfaceEnum(str, Enum):
+    M = "M"
+    D = "D"
+    B = "B"
+    L = "L"
+    P = "P"
+    O = "O"
+
+class FillingMaterialEnum(str, Enum):
+    composite = "composite"
+    amalgam = "amalgam"
+    gic = "gic"
+    temporary = "temporary"
+
+class MobilityGradeEnum(str, Enum):
+    normal = "normal"
+    M1 = "M1"
+    M2 = "M2"
+    M3 = "M3"
+
+class EptResultEnum(str, Enum):
+    positive = "positive"
+    negative = "negative"
+
+class RootCanalTreatedEnum(str, Enum):
+    no = "no"
+    medicated = "medicated"
+    incomplete = "incomplete"
+    completed = "completed"
+
+class RestorationTypeEnum(str, Enum):
+    crown = "crown"
+    bridge = "bridge"
+    veneer = "veneer"
+    onlay = "onlay"
+    overlay = "overlay"
+    post_and_core = "post_and_core"
+    vonlay = "vonlay"
+
+class RestorationMaterialEnum(str, Enum):
+    zirconia = "zirconia"
+    lithium_disilicate = "lithium_disilicate"
+    full_metal = "full_metal"
+    pfm = "pfm"
+    pfz = "pfz"
+    emax = "emax"
+
+class PostTypeEnum(str, Enum):
+    metal_post = "metal_post"
+    fiber_post = "fiber_post"
+
+class ImplantComponentEnum(str, Enum):
+    crown = "crown"
+    bridge = "bridge"
+    healing_abutment = "healing_abutment"
+    cover_screw = "cover_screw"
+
+class RetentionTypeEnum(str, Enum):
+    cement_retained = "cement_retained"
+    screw_retained = "screw_retained"

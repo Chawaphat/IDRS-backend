@@ -7,7 +7,7 @@ from sqlmodel import Field, Relationship, SQLModel
 
 if TYPE_CHECKING:
     from app.models.dental_chart import DentalChart
-    from app.models.tooth import Tooth
+    from app.models.tooth_record import ToothRecord
 
 
 class DentalStatus(SQLModel, table=True):
@@ -21,5 +21,5 @@ class DentalStatus(SQLModel, table=True):
     )
 
     chart: "DentalChart" = Relationship(back_populates="dental_status_records")
-    teeth: list["Tooth"] = Relationship(back_populates="status_record", sa_relationship_kwargs={"passive_deletes": True})
+    teeth: list["ToothRecord"] = Relationship(back_populates="status_record", sa_relationship_kwargs={"passive_deletes": True})
 
