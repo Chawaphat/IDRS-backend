@@ -38,6 +38,11 @@ from app.models.tooth_restoration import ToothRestoration
 from app.models.tooth_implant import ToothImplant
 from app.models.vdo_evaluation import VdoEvaluation, VdoEvaluationCreate, VdoEvaluationUpdate
 from app.models.medical_histories import MedicalHistory, MedicalHistoryCreate, MedicalHistoryUpdate
+from app.models.residual_ridge_assessment import (
+    ResidualRidgeAssessment,
+    ResidualRidgeAssessmentCreate,
+    ResidualRidgeAssessmentUpdate,
+)
 
 __all__ = [
     "AIDetectionResult",
@@ -82,4 +87,7 @@ __all__ = [
     "MedicalHistory",
     "MedicalHistoryCreate",
     "MedicalHistoryUpdate",
+    "ResidualRidgeAssessment",
+    "ResidualRidgeAssessmentCreate",
+    "ResidualRidgeAssessmentUpdate",
 ]

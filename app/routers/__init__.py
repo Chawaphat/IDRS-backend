@@ -25,6 +25,10 @@ from app.routers.medical_histories import (
     router as medical_histories_router,
     admin_router as medical_histories_admin_router,
 )
+from app.routers.residual_ridge_assessments import (
+    router as residual_ridge_assessments_router,
+    admin_router as residual_ridge_assessments_admin_router,
+)
 
 
 __all__ = [
@@ -45,4 +49,6 @@ __all__ = [
 	"profiles_router",
 	"vdo_evaluations_router",
 	"vdo_evaluations_admin_router",
+    "residual_ridge_assessments_router",
+    "residual_ridge_assessments_admin_router",
 ]

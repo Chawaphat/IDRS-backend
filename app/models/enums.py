@@ -203,3 +203,102 @@ class ImplantComponentEnum(str, Enum):
 class RetentionTypeEnum(str, Enum):
     cement_retained = "cement_retained"
     screw_retained = "screw_retained"
+
+class RidgeHeightType(str, Enum):
+    high = "high"
+    low_flat = "low_flat"
+    knife_edge = "knife_edge"
+
+
+class RidgeWidthType(str, Enum):
+    round = "round"
+    narrow = "narrow"
+
+
+class JawSizeType(str, Enum):
+    small = "small"
+    medium = "medium"
+    large = "large"
+
+
+class RidgeShapeType(str, Enum):
+    u_shape = "u_shape"
+    v_shape = "v_shape"
+    undercut = "undercut"
+    flat = "flat"
+
+
+class RidgeRelationType(str, Enum):
+    class_i = "class_i"
+    class_ii = "class_ii"
+    class_iii = "class_iii"
+    crossbite = "crossbite"
+
+
+class RidgeParallelismType(str, Enum):
+    parallel = "parallel"
+    divergent = "divergent"
+
+
+class InterridgeSpaceType(str, Enum):
+    sufficient = "sufficient"
+    insufficient = "insufficient"
+
+
+class ArchFormType(str, Enum):
+    square = "square"
+    taper = "taper"
+    ovoid = "ovoid"
+
+
+class PalatalVaultType(str, Enum):
+    average = "average"
+    steep = "steep"
+    v_shape = "v_shape"
+    shallow = "shallow"
+
+
+class PalatalThroatFormType(str, Enum):
+    class_i = "class_i"
+    class_ii = "class_ii"
+    class_iii = "class_iii"
+
+
+class TongueSizeType(str, Enum):
+    small = "small"
+    medium = "medium"
+    large = "large"
+
+
+class TonguePositionType(str, Enum):
+    normal = "normal"
+    retracted = "retracted"
+
+
+class SalivaAmountType(str, Enum):
+    normal = "normal"
+    xerostomia = "xerostomia"
+
+
+class SalivaConsistencyType(str, Enum):
+    thick = "thick"
+    thin = "thin"
+
+
+class LipMobilityType(str, Enum):
+    normal = "normal"
+    highly_active = "highly_active"
+    relatively_inactive = "relatively_inactive"
+
+
+class FacialMuscleToneType(str, Enum):
+    tense = "tense"
+    average = "average"
+    flaccid = "flaccid"
+
+
+class MentalAttitudeType(str, Enum):
+    philosophical = "philosophical"
+    exacting = "exacting"
+    hysterical = "hysterical"
+    indifferent = "indifferent"

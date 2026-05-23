@@ -17,6 +17,7 @@ if TYPE_CHECKING:
     from app.models.profile import Profile
     from app.models.vdo_evaluation import VdoEvaluation
     from app.models.medical_histories import MedicalHistory
+    from app.models.residual_ridge_assessment import ResidualRidgeAssessment
 
 
 class DentalChartBase(SQLModel):
@@ -43,6 +44,7 @@ class DentalChart(DentalChartBase, table=True):
     vdo_evaluations: "VdoEvaluation" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
     dental_status_records: "DentalStatus" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
     occlusal_analyses: "OcclusalAnalysis" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
+    residual_ridge_assessment: "ResidualRidgeAssessment" = Relationship(back_populates="chart", sa_relationship_kwargs={"passive_deletes": True})
     images: list["ImageManagement"] = Relationship(back_populates="chart")
 
 

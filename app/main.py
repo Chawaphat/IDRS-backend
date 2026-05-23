@@ -19,6 +19,8 @@ from app.routers import (
     profiles_router,
     vdo_evaluations_router,
     vdo_evaluations_admin_router,
+    residual_ridge_assessments_router,
+    residual_ridge_assessments_admin_router,
 )
 
 # Import all models so SQLModel metadata is fully registered before create_all.
@@ -92,6 +94,16 @@ app.include_router(
     vdo_evaluations_admin_router,
     prefix="/vdo-evaluation",
     tags=["vdo-evaluation-admin"],
+)
+app.include_router(
+    residual_ridge_assessments_router,
+    prefix="/dental-charts/{chart_id}/residual-ridge-assessment",
+    tags=["residual-ridge-assessment"],
+)
+app.include_router(
+    residual_ridge_assessments_admin_router,
+    prefix="/residual-ridge-assessment",
+    tags=["residual-ridge-assessment-admin"],
 )
 app.include_router(
     dental_status_router,
