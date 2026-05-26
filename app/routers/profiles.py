@@ -25,7 +25,7 @@ router = APIRouter()
 def create_profile_endpoint(
     payload: ProfileCreate,
     session: Session = Depends(get_session),
-    current_user: Profile = Depends(require_admin)
+    current_user: Profile = Depends(require_profile_owner),
 ) -> Profile:
     return create_profile(session, payload)
 

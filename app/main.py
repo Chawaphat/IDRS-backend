@@ -1,6 +1,7 @@
-from fastapi import FastAPI
+from fastapi import FastAPI, Depends
 
 from app.core.database import create_db_and_tables
+from app.core.authen import get_current_profile, require_admin, require_chart_editor
 from app.routers import (
     ai_detection_results_router,
     dental_charts_router,
@@ -38,106 +39,124 @@ app.include_router(
     profiles_router,
     prefix="/profiles",
     tags=["profiles"],
+    # Users handle their own auth inside the router
 )
 
 app.include_router(
     patients_router, 
     prefix="/patients", 
-    tags=["patients"]
-    )
+    tags=["patients"],
+    dependencies=[Depends(require_chart_editor)]
+)
 
 app.include_router(
     dental_charts_router,
     prefix="/dental-charts", 
-    tags=["dental-charts"]
-    )
+    tags=["dental-charts"],
+    dependencies=[Depends(require_chart_editor)]
+)
 
 app.include_router(
     medical_histories_router,
     prefix="/dental-charts/{chart_id}/medical-history",
     tags=["medical-history"],
-    )
+    dependencies=[Depends(require_chart_editor)]
+)
 app.include_router(
     medical_histories_admin_router,
     prefix="/medical-history",
     tags=["medical-history-admin"],
-    )
+    dependencies=[Depends(require_admin)]
+)
 
 app.include_router(
     extraoral_exams_router,
     prefix="/dental-charts/{chart_id}/extraoral-exams",
     tags=["extraoral-exams"],
-    )
+    dependencies=[Depends(require_chart_editor)]
+)
 app.include_router(
     extraoral_exams_admin_router,
     prefix="/extraoral-exams",
     tags=["extraoral-exams-admin"],
-    )
+    dependencies=[Depends(require_admin)]
+)
 
 app.include_router(
     esthetic_evaluations_router,
     prefix="/dental-charts/{chart_id}/esthetic-evaluation",
     tags=["esthetic-evaluation"],
+    dependencies=[Depends(require_chart_editor)]
 )
 app.include_router(
     esthetic_evaluations_admin_router,
     prefix="/esthetic-evaluation",
     tags=["esthetic-evaluation-admin"],
+    dependencies=[Depends(require_admin)]
 )
 
 app.include_router(
     vdo_evaluations_router,
     prefix="/dental-charts/{chart_id}/vdo-evaluation",
     tags=["vdo-evaluation"],
+    dependencies=[Depends(require_chart_editor)]
 )
 app.include_router(
     vdo_evaluations_admin_router,
     prefix="/vdo-evaluation",
     tags=["vdo-evaluation-admin"],
+    dependencies=[Depends(require_admin)]
 )
 app.include_router(
     residual_ridge_assessments_router,
     prefix="/dental-charts/{chart_id}/residual-ridge-assessment",
     tags=["residual-ridge-assessment"],
+    dependencies=[Depends(require_chart_editor)]
 )
 app.include_router(
     residual_ridge_assessments_admin_router,
     prefix="/residual-ridge-assessment",
     tags=["residual-ridge-assessment-admin"],
+    dependencies=[Depends(require_admin)]
 )
 app.include_router(
     dental_status_router,
     prefix="/dental-charts/{chart_id}/dental-status",
     tags=["dental-status"],
-    )
+    dependencies=[Depends(require_chart_editor)]
+)
 
 app.include_router(
     occlusal_analyses_router,
     prefix="/dental-charts/{chart_id}/occlusal-analysis",
-    tags=["occlusal-analysis"],)
+    tags=["occlusal-analysis"],
+    dependencies=[Depends(require_chart_editor)]
+)
 
 app.include_router(
     occlusal_analyses_admin_router,
     prefix="/occlusal-analysis",
     tags=["occlusal-analysis-admin"],
+    dependencies=[Depends(require_admin)]
 )
 
 app.include_router(
     occlusal_contacts_router,
     prefix="/dental-charts/{chart_id}/occlusal-contacts",
     tags=["occlusal-contacts"],
-    )
-
+    dependencies=[Depends(require_chart_editor)]
+)
 
 app.include_router(
     image_management_router,
     prefix="/dental-charts/{chart_id}/images",
     tags=["image-management"],
-    )
-
+    dependencies=[Depends(require_chart_editor)]
+)
 
 app.include_router(
     ai_detection_results_router,
     prefix="/ai-detection-results",
     tags=["ai-detection-results"],
-    )
+    dependencies=[Depends(require_chart_editor)]
+)

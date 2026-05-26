@@ -84,3 +84,42 @@ def require_dentist(
         raise HTTPException(403,detail="Dentist access required")
 
     return current_user
+
+def require_assistant(
+    current_user: Profile = Depends(get_current_profile)
+):
+    if current_user.role != "assistant":
+        raise HTTPException(403,detail="Assistant access required")
+
+    return current_user
+
+def require_chart_editor(
+    current_user: Profile = Depends(get_current_profile)
+):
+    allowed_roles = ["dentist", "assistant", "admin"]
+
+    if current_user.role not in allowed_roles:
+        raise HTTPException(
+            status_code=403,
+            detail="Chart editing access required"
+        )
+
+    return current_user
+
+def require_chart_owner(
+    chart_id: uuid.UUID,
+    session: Session = Depends(get_session),
+    current_user: Profile = Depends(require_chart_editor)
+):
+    from app.models.dental_chart import DentalChart
+    chart = session.get(DentalChart, chart_id)
+    if not chart:
+        raise HTTPException(status_code=404, detail="Dental chart not found")
+        
+    if current_user.role == "dentist" and chart.dentist_id != current_user.id:
+        raise HTTPException(
+            status_code=403, 
+            detail="Not authorized. You are not the owner of this chart."
+        )
+        
+    return current_user

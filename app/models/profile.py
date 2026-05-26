@@ -13,7 +13,7 @@ if TYPE_CHECKING:
 
 class ProfileBase(SQLModel):
     license_id: str | None = Field(default=None, max_length=50)
-    name: str = Field(max_length=255)
+    full_name: str = Field(max_length=255)
     role: UserRole = Field(
         default=UserRole.dentist,
         sa_column=Column(SAEnum(UserRole, name="user_role"), nullable=False),
@@ -39,6 +39,6 @@ class ProfileCreate(ProfileBase):
 
 class ProfileUpdate(SQLModel):
     license_id: str | None = None
-    name: str | None = None
+    full_name: str | None = None
     role: UserRole | None = None
     phone: str | None = None
