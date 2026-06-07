@@ -1,4 +1,7 @@
 from fastapi import FastAPI, Depends
+from dotenv import load_dotenv
+
+load_dotenv()
 
 from app.core.database import create_db_and_tables
 from app.core.authen import get_current_profile, require_admin, require_chart_editor
@@ -26,8 +29,17 @@ from app.routers import (
 
 # Import all models so SQLModel metadata is fully registered before create_all.
 from app import models as _models
+from fastapi.middleware.cors import CORSMiddleware
 
 app = FastAPI(title="IDRS Backend", version="1.0.0")
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["http://localhost:5173", "http://127.0.0.1:5173"], # Adjust to your frontend URL
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
 
 
 @app.on_event("startup")

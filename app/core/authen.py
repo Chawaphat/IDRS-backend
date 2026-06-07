@@ -10,9 +10,14 @@ from supabase_auth import Session
 
 from app.core.database import get_session
 
+from dotenv import load_dotenv
+
+load_dotenv()
+
 security = HTTPBearer()
 
-SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL")
+SUPABASE_URL = os.getenv("SUPABASE_URL")
+SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL", f"{SUPABASE_URL}/auth/v1/jwk" if SUPABASE_URL else "")
 
 jwks_client = PyJWKClient(SUPABASE_JWKS_URL)
 
