@@ -17,9 +17,13 @@ load_dotenv()
 security = HTTPBearer()
 
 SUPABASE_URL = os.getenv("SUPABASE_URL")
-SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL", f"{SUPABASE_URL}/auth/v1/jwk" if SUPABASE_URL else "")
+SUPABASE_KEY = os.getenv("SUPABASE_KEY")
+SUPABASE_JWKS_URL = os.getenv("SUPABASE_JWKS_URL", f"{SUPABASE_URL}/auth/v1/.well-known/jwks.json" if SUPABASE_URL else "")
 
-jwks_client = PyJWKClient(SUPABASE_JWKS_URL)
+jwks_client = PyJWKClient(
+    SUPABASE_JWKS_URL,
+    headers={"apikey": SUPABASE_KEY} if SUPABASE_KEY else {}
+)
 
 def verify_token(
     credentials: HTTPAuthorizationCredentials = Depends(security)
@@ -32,16 +36,17 @@ def verify_token(
         payload = jwt.decode(
             token,
             signing_key.key,
-            algorithms=["RS256"],
+            algorithms=["RS256", "ES256", "HS256"],
             audience="authenticated"
         )
 
         return payload
 
-    except Exception:
+    except Exception as e:
+        print(f"Token verification error: {str(e)}")
         raise HTTPException(
             status_code=401,
-            detail="Invalid or expired token"
+            detail=f"Invalid or expired token: {str(e)}"
         )
         
 def get_current_profile(

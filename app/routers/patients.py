@@ -16,7 +16,7 @@ from app.services.patient import (
     update_patient,
     search_patients,
 )
-from app.models.patient import Patient, PatientCreate, PatientUpdate
+from app.models.patient import Patient, PatientCreate, PatientUpdate, PatientWithClinicalSummary
 
 router = APIRouter()
 
@@ -27,15 +27,15 @@ def create_patient_endpoint(
 ) -> Patient:
     return create_patient(session, payload)
 
-@router.get("", response_model=list[Patient])
+@router.get("", response_model=list[PatientWithClinicalSummary])
 def get_patients_endpoint(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
     session: Session = Depends(get_session),
-) -> list[Patient]:
+) -> list[PatientWithClinicalSummary]:
     return get_all_patients(session, skip=skip, limit=limit)
 
-@router.get("/search", response_model=list[Patient])
+@router.get("/search", response_model=list[PatientWithClinicalSummary])
 def search_patients_endpoint(
     query: str = Query(..., min_length=1, description="Search by name or HN number"),
     skip: int = Query(default=0, ge=0),

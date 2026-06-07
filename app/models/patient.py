@@ -38,3 +38,10 @@ class PatientUpdate(SQLModel):
     age: int | None = None
     phone: str | None = None
     allergy: str | None = None
+
+class PatientWithClinicalSummary(PatientBase):
+    patient_id: uuid.UUID
+    created_at: datetime
+    last_visit: datetime | None = None
+    chief_complaint: str | None = None
+    status: str = "Active"
