@@ -27,7 +27,7 @@ def verify_token(
         payload = jwt.decode(
             token,
             signing_key.key,
-            algorithms=["ES256"],
+            algorithms=["RS256"],
             audience="authenticated"
         )
 
@@ -43,7 +43,7 @@ def get_current_profile(
     payload = Depends(verify_token),
     session: Session = Depends(get_session)
 ):
-    user_id = payload["sub"]
+    user_id = uuid.UUID(payload["sub"])
 
     profile = session.get(Profile, user_id)
 

@@ -4,7 +4,7 @@ import uuid
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
-from app.core.authen import get_current_profile ,require_admin , require_profile_owner
+from app.core.authen import get_current_profile ,require_admin , require_profile_owner, verify_token
 
 from app.core.database import get_session
 from app.models.dental_chart import DentalChart
@@ -25,9 +25,32 @@ router = APIRouter()
 def create_profile_endpoint(
     payload: ProfileCreate,
     session: Session = Depends(get_session),
-    current_user: Profile = Depends(require_profile_owner),
+    token_payload: dict = Depends(verify_token),
 ) -> Profile:
-    return create_profile(session, payload)
+    # The authenticated user's ID is in token_payload["sub"]
+    user_id = uuid.UUID(token_payload["sub"])
+    
+    # Target profile ID to create: either specified by payload, or falls back to user_id
+    target_id = payload.id or user_id
+    
+    # If trying to create a profile for someone else, the requestor must be an admin
+    if target_id != user_id:
+        requestor = session.get(Profile, user_id)
+        if not requestor or requestor.role != "admin":
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="Not authorized to create profiles for other users"
+            )
+            
+    # Check if profile already exists
+    existing = session.get(Profile, target_id)
+    if existing:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Profile already exists"
+        )
+        
+    return create_profile(session, payload, target_id)
 
 
 @router.get("", response_model=list[Profile])

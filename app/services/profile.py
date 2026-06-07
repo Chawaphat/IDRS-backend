@@ -8,8 +8,13 @@ from sqlmodel import Session, select
 from app.models.dental_chart import DentalChart
 from app.models.profile import Profile, ProfileCreate, ProfileUpdate
 
-def create_profile(session: Session, payload: ProfileCreate) -> Profile:
+def create_profile(session: Session, payload: ProfileCreate, profile_id: uuid.UUID | None = None) -> Profile:
     profile = Profile.model_validate(payload)
+    
+    # Ensure ID is correctly assigned (either from argument, payload, or newly generated)
+    effective_id = profile_id or payload.id or uuid.uuid4()
+    profile.id = effective_id
+    
     session.add(profile)
     session.commit()
     session.refresh(profile)

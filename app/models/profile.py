@@ -34,7 +34,7 @@ class Profile(ProfileBase, table=True):
 
 
 class ProfileCreate(ProfileBase):
-    pass
+    id: uuid.UUID | None = None
 
 
 class ProfileUpdate(SQLModel):
