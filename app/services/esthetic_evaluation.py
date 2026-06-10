@@ -28,12 +28,9 @@ def get_esthetic_evaluation_by_id(session: Session, esthetic_id: uuid.UUID) -> E
     return session.get(EstheticEvaluation, esthetic_id)
 
 
-def get_esthetic_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> EstheticEvaluation:
+def get_esthetic_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> EstheticEvaluation | None:
     statement = select(EstheticEvaluation).where(EstheticEvaluation.chart_id == chart_id)
-    item = session.exec(statement).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Esthetic evaluation not found")
-    return item
+    return session.exec(statement).first()
 
 
 def get_all_esthetic_evaluations(
@@ -50,11 +47,21 @@ def update_esthetic_evaluation(
     chart_id: uuid.UUID,
     payload: EstheticEvaluationUpdate,
 ) -> EstheticEvaluation:
-    item = get_esthetic_evaluation_by_chart_id(session, chart_id)
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    for key, value in updates.items():
-        setattr(item, key, value)
-    session.add(item)
+    statement = select(EstheticEvaluation).where(EstheticEvaluation.chart_id == chart_id)
+    item = session.exec(statement).first()
+
+    if not item:
+        # Create a new item if it doesn't exist
+        create_payload = EstheticEvaluationCreate(**payload.model_dump(exclude_unset=True, exclude_none=True))
+        item = EstheticEvaluation.model_validate({**create_payload.model_dump(), "chart_id": chart_id})
+        session.add(item)
+    else:
+        # Update existing item
+        updates = payload.model_dump(exclude_unset=True, exclude_none=True)
+        for key, value in updates.items():
+            setattr(item, key, value)
+        session.add(item)
+        
     session.commit()
     session.refresh(item)
     return item
@@ -62,5 +69,8 @@ def update_esthetic_evaluation(
 
 def delete_esthetic_evaluation(session: Session, chart_id: uuid.UUID) -> None:
     item = get_esthetic_evaluation_by_chart_id(session, chart_id)
-    session.delete(item)
-    session.commit()
+    if item:
+        session.delete(item)
+        session.commit()
+    else:
+        raise HTTPException(status_code=404, detail="Esthetic evaluation not found")

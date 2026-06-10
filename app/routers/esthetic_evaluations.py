@@ -34,11 +34,11 @@ def create_esthetic_evaluation_endpoint(
     return create_esthetic_evaluation(session, chart_id, payload)
 
 
-@router.get("", response_model=EstheticEvaluation, status_code=status.HTTP_200_OK)
+@router.get("", response_model=EstheticEvaluation | None, status_code=status.HTTP_200_OK)
 def get_esthetic_evaluation_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> EstheticEvaluation:
+) -> EstheticEvaluation | None:
     return get_esthetic_evaluation_by_chart_id(session, chart_id)
 
 

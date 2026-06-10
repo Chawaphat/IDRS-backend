@@ -45,6 +45,7 @@ class EstheticEvaluationBase(SQLModel):
     fv_sound: bool | None = None
     closest_speaking: float | None = None
     reference_teeth: list[int] | None = Field(default=None, sa_column=Column(ARRAY(Integer)))
+    note: str | None = None
 
 
 class EstheticEvaluation(EstheticEvaluationBase, table=True):
@@ -73,3 +74,4 @@ class EstheticEvaluationUpdate(SQLModel):
     fv_sound: bool | None = None
     closest_speaking: float | None = None
     reference_teeth: list[int] | None = None
+    note: str | None = None

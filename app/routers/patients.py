@@ -6,6 +6,8 @@ from fastapi import APIRouter, Depends, Query, status
 from sqlmodel import Session
 
 from app.core.database import get_session
+from app.core.authen import get_current_profile
+from app.models.profile import Profile
 from app.models.dental_chart import DentalChart
 from app.services.patient import (
     create_patient,
@@ -24,16 +26,18 @@ router = APIRouter()
 def create_patient_endpoint(
     payload: PatientCreate,
     session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
 ) -> Patient:
-    return create_patient(session, payload)
+    return create_patient(session, payload, current_user.id)
 
 @router.get("", response_model=list[PatientWithClinicalSummary])
 def get_patients_endpoint(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
     session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
 ) -> list[PatientWithClinicalSummary]:
-    return get_all_patients(session, skip=skip, limit=limit)
+    return get_all_patients(session, current_user.id, skip=skip, limit=limit)
 
 @router.get("/search", response_model=list[PatientWithClinicalSummary])
 def search_patients_endpoint(
@@ -41,15 +45,17 @@ def search_patients_endpoint(
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=500),
     session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
 ):
-    return search_patients(session, query=query, skip=skip, limit=limit)
+    return search_patients(session, query=query, dentist_id=current_user.id, skip=skip, limit=limit)
 
 @router.get("/{patient_id}", response_model=Patient)
 def get_patient_by_id_endpoint(
     patient_id: uuid.UUID,
     session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
 ) -> Patient:
-    return get_patient_by_id(session, patient_id)
+    return get_patient_by_id(session, patient_id, current_user.id)
 
 @router.get("/{patient_id}/dental-charts", response_model=list[DentalChart])
 def get_patient_dental_charts_endpoint(
@@ -63,13 +69,15 @@ def update_patient_endpoint(
     patient_id: uuid.UUID,
     payload: PatientUpdate,
     session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
 ) -> Patient:
-    return update_patient(session, patient_id, payload)
+    return update_patient(session, patient_id, payload, current_user.id)
 
 
 @router.delete("/{patient_id}", status_code=status.HTTP_204_NO_CONTENT)
 def delete_patient_endpoint(
     patient_id: uuid.UUID,
     session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
 ) -> None:
-    delete_patient(session, patient_id)
+    delete_patient(session, patient_id, current_user.id)

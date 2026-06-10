@@ -16,6 +16,7 @@ class PatientBase(SQLModel):
     age: int | None = None
     phone: str | None = Field(default=None, max_length=15)
     allergy: str | None = Field(default=None, max_length=20)
+    dentist_id: uuid.UUID | None = Field(default=None, foreign_key="profiles.id")
 
 class Patient(PatientBase, table=True):
     __tablename__ = "patients"
@@ -27,6 +28,7 @@ class Patient(PatientBase, table=True):
     )
 
     dental_charts: list["DentalChart"] = Relationship(back_populates="patient")
+    dentist: "Profile" = Relationship(back_populates="patients")
 
 class PatientCreate(PatientBase):
     pass

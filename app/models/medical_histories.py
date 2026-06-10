@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import TYPE_CHECKING
 
-from sqlalchemy import ARRAY, Column, Enum as SAEnum
+from sqlalchemy import ARRAY, Column, Enum as SAEnum, JSON
 from sqlmodel import DateTime, Field, Relationship, SQLModel
 
 from app.models.enums import (
@@ -18,7 +18,9 @@ class MedicalHistoryBase(SQLModel):
     present_illness: str | None = None
     medical_history: str | None = None
     regular_doctor_visits: bool = False
-    current_medication: str | None = None
+    regular_doctor_months: int | None = None
+    clinic_name: str | None = None
+    current_medication: list[dict] | None = Field(default=None, sa_column=Column(JSON))
     allergy_status: AllergyStatusType          
     allergy_detail: str | None = None
     dental_history: str | None = None
@@ -26,6 +28,11 @@ class MedicalHistoryBase(SQLModel):
     patient_expectation_other: str | None = None
     patient_self_evaluation: str | None = None
     patient_expected_outcome: str | None = None
+    edentulous_time: str | None = None
+    previous_denture_count: str | None = None
+    present_denture_age: str | None = None
+    denture_complaint: str | None = None
+    note: str | None = None
 
 
 class MedicalHistory(MedicalHistoryBase, table=True):
@@ -54,7 +61,9 @@ class MedicalHistoryUpdate(SQLModel):
     present_illness: str | None = None
     medical_history: str | None = None
     regular_doctor_visits: bool | None = None
-    current_medication: str | None = None
+    regular_doctor_months: int | None = None
+    clinic_name: str | None = None
+    current_medication: list[dict] | None = None
     allergy_status: AllergyStatusType | None = None  
     allergy_detail: str | None = None
     dental_history: str | None = None
@@ -62,3 +71,8 @@ class MedicalHistoryUpdate(SQLModel):
     patient_expectation_other: str | None = None
     patient_self_evaluation: str | None = None
     patient_expected_outcome: str | None = None
+    edentulous_time: str | None = None
+    previous_denture_count: str | None = None
+    present_denture_age: str | None = None
+    denture_complaint: str | None = None
+    note: str | None = None

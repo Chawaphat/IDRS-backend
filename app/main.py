@@ -131,6 +131,7 @@ app.include_router(
     tags=["residual-ridge-assessment-admin"],
     dependencies=[Depends(require_admin)]
 )
+
 app.include_router(
     dental_status_router,
     prefix="/dental-charts/{chart_id}/dental-status",

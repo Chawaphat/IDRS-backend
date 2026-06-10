@@ -10,17 +10,18 @@ from app.models.patient import Patient, PatientCreate, PatientUpdate, PatientWit
 
 
 
-def create_patient(session: Session, payload: PatientCreate) -> Patient:
+def create_patient(session: Session, payload: PatientCreate, dentist_id: uuid.UUID) -> Patient:
     patient = Patient.model_validate(payload)
+    patient.dentist_id = dentist_id
     session.add(patient)
     session.commit()
     session.refresh(patient)
     return patient
 
 
-def get_patient_by_id(session: Session, patient_id: uuid.UUID) -> Patient:
+def get_patient_by_id(session: Session, patient_id: uuid.UUID, dentist_id: uuid.UUID) -> Patient:
     patient = session.get(Patient, patient_id)
-    if patient is None:
+    if patient is None or patient.dentist_id != dentist_id:
         raise HTTPException(status_code=404, detail="Patient not found")
     return patient
 
@@ -32,8 +33,8 @@ def get_patient_dental_charts(session: Session, patient_id: uuid.UUID) -> list[D
 
 from app.models.medical_histories import MedicalHistory
 
-def get_all_patients(session: Session, skip: int = 0, limit: int = 100) -> list[PatientWithClinicalSummary]:
-    statement = select(Patient).offset(skip).limit(limit)
+def get_all_patients(session: Session, dentist_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[PatientWithClinicalSummary]:
+    statement = select(Patient).where(Patient.dentist_id == dentist_id).offset(skip).limit(limit)
     patients = session.exec(statement).all()
     
     results = []
@@ -49,6 +50,10 @@ def get_all_patients(session: Session, skip: int = 0, limit: int = 100) -> list[
             mh = session.exec(mh_stmt).first()
             if mh:
                 chief_complaint = mh.chief_complaint
+                if mh.allergy_status == "yes" and mh.allergy_detail:
+                    p.allergy = mh.allergy_detail
+                elif mh.allergy_status in ["no", "dont_know"]:
+                    p.allergy = None
                 
         results.append(PatientWithClinicalSummary(
             **p.model_dump(),
@@ -59,8 +64,8 @@ def get_all_patients(session: Session, skip: int = 0, limit: int = 100) -> list[
     return results
 
 
-def update_patient(session: Session, patient_id: uuid.UUID, payload: PatientUpdate) -> Patient:
-    patient = get_patient_by_id(session, patient_id)
+def update_patient(session: Session, patient_id: uuid.UUID, payload: PatientUpdate, dentist_id: uuid.UUID) -> Patient:
+    patient = get_patient_by_id(session, patient_id, dentist_id)
     updates = payload.model_dump(exclude_unset=True)
     for key, value in updates.items():
         setattr(patient, key, value)
@@ -70,20 +75,22 @@ def update_patient(session: Session, patient_id: uuid.UUID, payload: PatientUpda
     return patient
 
 
-def delete_patient(session: Session, patient_id: uuid.UUID) -> None:
-    patient = get_patient_by_id(session, patient_id)
+def delete_patient(session: Session, patient_id: uuid.UUID, dentist_id: uuid.UUID) -> None:
+    patient = get_patient_by_id(session, patient_id, dentist_id)
     session.delete(patient)
     session.commit()
 
 def search_patients(
     session: Session,
     query: str,
+    dentist_id: uuid.UUID,
     skip: int = 0,
     limit: int = 100,
 ) -> list[PatientWithClinicalSummary]:
     search_term = f"%{query}%"
     statement = (
         select(Patient)
+        .where(Patient.dentist_id == dentist_id)
         .where(
             or_(
                 Patient.name.ilike(search_term),
@@ -108,6 +115,10 @@ def search_patients(
             mh = session.exec(mh_stmt).first()
             if mh:
                 chief_complaint = mh.chief_complaint
+                if mh.allergy_status == "yes" and mh.allergy_detail:
+                    p.allergy = mh.allergy_detail
+                elif mh.allergy_status in ["no", "dont_know"]:
+                    p.allergy = None
                 
         results.append(PatientWithClinicalSummary(
             **p.model_dump(),
