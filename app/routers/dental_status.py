@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 import uuid
+from typing import Optional
 
 from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
@@ -24,7 +25,7 @@ def create_dental_status_endpoint(
 ) -> DentalStatusResponse:
     return create_or_replace_dental_status(session,chart_id,payload)
 
-@router.get("", response_model=DentalStatusResponse, response_model_exclude_none=True, response_model_exclude_defaults=True, status_code=status.HTTP_200_OK)
+@router.get("", response_model=Optional[DentalStatusResponse], response_model_exclude_none=True, response_model_exclude_defaults=True, status_code=status.HTTP_200_OK)
 def get_dental_status_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),

@@ -51,11 +51,19 @@ def update_residual_ridge_assessment(
     chart_id: uuid.UUID,
     payload: ResidualRidgeAssessmentUpdate,
 ) -> ResidualRidgeAssessment:
-    item = get_residual_ridge_assessment_by_chart_id(session, chart_id)
+    statement = select(ResidualRidgeAssessment).where(ResidualRidgeAssessment.chart_id == chart_id)
+    item = session.exec(statement).first()
+    if not item:
+        item = ResidualRidgeAssessment.model_validate(
+            {**payload.model_dump(exclude_unset=True, exclude_none=True), "chart_id": chart_id}
+        )
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
     updates = payload.model_dump(exclude_unset=True, exclude_none=True)
     for key, value in updates.items():
         setattr(item, key, value)
-        
     item.updated_at = datetime.utcnow()
     session.add(item)
     session.commit()

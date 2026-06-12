@@ -48,14 +48,19 @@ def update_medical_history(
     chart_id: uuid.UUID,
     payload: MedicalHistoryUpdate,
 ) -> MedicalHistory:
-    item = get_medical_history_by_chart_id(session, chart_id)
-    
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    for key, value in updates.items():
-        setattr(item, key, value)
-    
-    session.add(item)
-    
+    statement = select(MedicalHistory).where(MedicalHistory.chart_id == chart_id)
+    item = session.exec(statement).first()
+    if not item:
+        item = MedicalHistory.model_validate(
+            {**payload.model_dump(exclude_unset=True, exclude_none=True), "chart_id": chart_id}
+        )
+        session.add(item)
+    else:
+        updates = payload.model_dump(exclude_unset=True, exclude_none=True)
+        for key, value in updates.items():
+            setattr(item, key, value)
+        session.add(item)
+
     # Sync allergy to patient
     chart = session.get(DentalChart, chart_id)
     if chart:
@@ -69,7 +74,6 @@ def update_medical_history(
 
     session.commit()
     session.refresh(item)
-    
     return item
 
 def delete_medical_history(session: Session, chart_id: uuid.UUID) -> None:

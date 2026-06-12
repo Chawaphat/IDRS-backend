@@ -2,10 +2,11 @@ from __future__ import annotations
 
 import uuid
 
+from sqlalchemy import delete
 from sqlmodel import Session, select
 
 from app.models.occlusal_analysis import OcclusalAnalysis
-from app.models.occlusal_contact import OcclusalContact,  OcclusalContactBulkCreate
+from app.models.occlusal_contact import OcclusalContact, OcclusalContactBulkCreate
 
 
 
@@ -26,12 +27,10 @@ def create_and_replace_occlusal_contacts(
 ) -> list[OcclusalContact]:
     occlusal = get_or_create_occlusal_analysis(session, chart_id)
     
-    # ลบของเก่าทั้งหมดของ occlusal นี้
-    old_contacts = session.exec(
-        select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
-    ).all()
-    for contact in old_contacts:
-        session.delete(contact)
+    # Bulk delete เก่าทั้งหมดใน 1 SQL statement
+    session.exec(
+        delete(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
+    )
     
     # insert ใหม่ทั้งหมด
     items = [
@@ -43,7 +42,6 @@ def create_and_replace_occlusal_contacts(
     return items 
 
 def delete_occlusal_contact(session: Session, contact_id: uuid.UUID) -> None:
-    
     item = session.get(OcclusalContact, contact_id)
     session.delete(item)
     session.commit()

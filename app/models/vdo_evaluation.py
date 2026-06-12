@@ -16,6 +16,7 @@ class VdoEvaluationBase(SQLModel):
     free_way_space: float | None = None
     bite_type: BiteType | None = None
     reference_teeth: list[int] | None = None
+    note: str | None = None
 
 
 class VdoEvaluation(VdoEvaluationBase, table=True):
@@ -47,3 +48,4 @@ class VdoEvaluationUpdate(SQLModel):
     free_way_space: float | None = None
     bite_type: BiteType | None = None
     reference_teeth: list[int] | None = None
+    note: str | None = None

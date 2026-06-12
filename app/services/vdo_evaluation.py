@@ -38,7 +38,16 @@ def update_vdo_evaluation(
     chart_id: uuid.UUID,
     payload: VdoEvaluationUpdate,
 ) -> VdoEvaluation:
-    item = get_vdo_evaluation_by_chart_id(session, chart_id)
+    statement = select(VdoEvaluation).where(VdoEvaluation.chart_id == chart_id)
+    item = session.exec(statement).first()
+    if not item:
+        item = VdoEvaluation.model_validate(
+            {**payload.model_dump(exclude_unset=True, exclude_none=True), "chart_id": chart_id}
+        )
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
     updates = payload.model_dump(exclude_unset=True, exclude_none=True)
     for key, value in updates.items():
         setattr(item, key, value)
