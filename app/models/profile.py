@@ -31,10 +31,11 @@ class Profile(ProfileBase, table=True):
     )
 
     dental_charts: list["DentalChart"] = Relationship(back_populates="dentist")
+    patients: list["Patient"] = Relationship(back_populates="dentist")
 
 
 class ProfileCreate(ProfileBase):
-    pass
+    id: uuid.UUID | None = None
 
 
 class ProfileUpdate(SQLModel):

@@ -90,4 +90,7 @@ __all__ = [
     "ResidualRidgeAssessment",
     "ResidualRidgeAssessmentCreate",
     "ResidualRidgeAssessmentUpdate",
+    "SectionNote",
+    "SectionNoteCreate",
+    "SectionNoteUpdate",
 ]

@@ -18,6 +18,7 @@ class PatientExpectationsType(str, Enum):
     esthetic = "esthetic"
     health = "health"
     phonetics = "phonetics"
+    others = "others"
 
 
 class FacialSymmetryType(str, Enum):

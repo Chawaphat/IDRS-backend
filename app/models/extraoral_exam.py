@@ -27,6 +27,7 @@ class ExtraoralExamBase(SQLModel):
     jaw_deviation: JawDeviationType | None = None
     has_limited_opening: bool | None = None
     mouth_opening_mm: int | None = None
+    note: str | None = None
     has_limited_movement: bool | None = None
     specify_movement_detail: str | None = None
     parafunctional_habit: list[HabitType] | None = None
@@ -86,3 +87,4 @@ class ExtraoralExamUpdate(SQLModel):
     parafunctional_habit: list[HabitType] | None = None
     parafunctional_habit_other: str | None = None
     factors_affecting_tooth_wear: dict | list | None = None
+    note: str | None = None

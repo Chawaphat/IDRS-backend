@@ -51,4 +51,5 @@ __all__ = [
 	"vdo_evaluations_admin_router",
     "residual_ridge_assessments_router",
     "residual_ridge_assessments_admin_router",
+    "section_notes_router",
 ]
