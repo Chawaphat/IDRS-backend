@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
@@ -42,20 +41,13 @@ def get_esthetic_evaluation_endpoint(
     return get_esthetic_evaluation_by_chart_id(session, chart_id)
 
 
-@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
+@router.put("", response_model=EstheticEvaluation, status_code=status.HTTP_200_OK)
 def update_esthetic_evaluation_endpoint(
     chart_id: uuid.UUID,
     payload: EstheticEvaluationUpdate,
     session: Session = Depends(get_session),
-) -> dict[str, Any]:
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    item = update_esthetic_evaluation(session, chart_id, payload)
-
-    return {
-        "esthetic_id": item.esthetic_id,
-        "chart_id": item.chart_id,
-        **updates,
-    }
+) -> EstheticEvaluation:
+    return update_esthetic_evaluation(session, chart_id, payload)
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)

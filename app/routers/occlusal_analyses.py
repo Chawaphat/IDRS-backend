@@ -3,7 +3,7 @@ from __future__ import annotations
 from typing import Any
 import uuid
 
-from fastapi import APIRouter, Depends, Query , status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from app.core.database import get_session
@@ -22,7 +22,7 @@ from app.models.occlusal_analysis import (
 router = APIRouter()
 admin_router = APIRouter()
 
-@router.put("", response_model=OcclusalAnalysis, status_code=status.HTTP_201_CREATED)
+@router.put("", response_model=OcclusalAnalysis, status_code=status.HTTP_200_OK)
 def upsert_occlusal_analysis_endpoint(
     chart_id: uuid.UUID,
     payload: OcclusalAnalysisCreate,
@@ -60,4 +60,6 @@ def get_occlusal_analysis_by_id_endpoint(
     session: Session = Depends(get_session),
 ) -> OcclusalAnalysis:
     item = get_occlusal_analysis_by_id(session, occlusal_id)
+    if item is None:
+        raise HTTPException(status_code=404, detail="Occlusal analysis not found")
     return item

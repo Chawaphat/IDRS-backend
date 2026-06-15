@@ -1,9 +1,8 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
-from fastapi import APIRouter , Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from app.core.database import get_session
@@ -29,27 +28,20 @@ def create_medical_history_endpoint(
 ) -> MedicalHistory:
     return create_medical_history(session, chart_id, payload)
 
-@router.get("", response_model=MedicalHistory, status_code=status.HTTP_200_OK)
+@router.get("", response_model=MedicalHistory | None, status_code=status.HTTP_200_OK)
 def get_medical_histories_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> MedicalHistory:
+) -> MedicalHistory | None:
     return get_medical_history_by_chart_id(session, chart_id)
 
-@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
+@router.put("", response_model=MedicalHistory, status_code=status.HTTP_200_OK)
 def update_medical_history_endpoint(
     chart_id: uuid.UUID,
     payload: MedicalHistoryUpdate,
     session: Session = Depends(get_session),
-) -> dict[str, Any]:
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    item = update_medical_history(session, chart_id, payload)
-
-    return {
-        "history_id": item.history_id,
-        "chart_id": item.chart_id,
-         **updates
-    }
+) -> MedicalHistory:
+    return update_medical_history(session, chart_id, payload)
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
 def delete_medical_history_endpoint(

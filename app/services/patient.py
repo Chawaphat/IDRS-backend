@@ -1,12 +1,27 @@
 from __future__ import annotations
 
 import uuid
+from datetime import datetime
 
 from fastapi import HTTPException
 from sqlmodel import Session, select ,or_
 
 from app.models.dental_chart import DentalChart
 from app.models.patient import Patient, PatientCreate, PatientUpdate, PatientWithClinicalSummary
+
+
+def _activity_sort_key(item: PatientWithClinicalSummary) -> datetime:
+    """Sort key for the patient directory: most recent activity first.
+
+    Uses the patient's last visit if they have a chart, otherwise when they were
+    registered (created_at) — so both active patients and brand-new registrations
+    surface at the top. tzinfo is stripped so naive (utcnow default) and tz-aware
+    (read back from Postgres) timestamps stay comparable in one list.
+    """
+    when = item.last_visit or item.created_at
+    if when.tzinfo is not None:
+        when = when.replace(tzinfo=None)
+    return when
 
 
 
@@ -61,6 +76,7 @@ def get_all_patients(session: Session, dentist_id: uuid.UUID, skip: int = 0, lim
             chief_complaint=chief_complaint,
             status="Active"
         ))
+    results.sort(key=_activity_sort_key, reverse=True)
     return results
 
 
@@ -126,4 +142,5 @@ def search_patients(
             chief_complaint=chief_complaint,
             status="Active"
         ))
+    results.sort(key=_activity_sort_key, reverse=True)
     return results

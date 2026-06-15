@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
@@ -30,27 +29,20 @@ def create_extraoral_exam_endpoint(
     return create_extraoral_exam(session,chart_id, payload)
 
 
-@router.get("", response_model=ExtraoralExam,status_code=status.HTTP_200_OK)
+@router.get("", response_model=ExtraoralExam | None, status_code=status.HTTP_200_OK)
 def get_extraoral_exams_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> ExtraoralExam:
+) -> ExtraoralExam | None:
     return get_extraoral_exam_by_chart_id(session, chart_id)
 
-@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
+@router.put("", response_model=ExtraoralExam, status_code=status.HTTP_200_OK)
 def update_extraoral_exam_endpoint(
     chart_id: uuid.UUID,
     payload: ExtraoralExamUpdate,
     session: Session = Depends(get_session),
-) -> dict[str, Any]:
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True  )
-    item = update_extraoral_exam(session, chart_id, payload)
-    
-    return {
-        "exam_id": item.exam_id,
-        "chart_id": item.chart_id,
-        **updates,
-    }
+) -> ExtraoralExam:
+    return update_extraoral_exam(session, chart_id, payload)
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)

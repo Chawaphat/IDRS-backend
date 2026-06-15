@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
@@ -34,29 +33,21 @@ def create_residual_ridge_assessment_endpoint(
     return create_residual_ridge_assessment(session, chart_id, payload)
 
 
-@router.get("", response_model=ResidualRidgeAssessment, status_code=status.HTTP_200_OK)
+@router.get("", response_model=ResidualRidgeAssessment | None, status_code=status.HTTP_200_OK)
 def get_residual_ridge_assessment_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> ResidualRidgeAssessment:
+) -> ResidualRidgeAssessment | None:
     return get_residual_ridge_assessment_by_chart_id(session, chart_id)
 
 
-@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
+@router.put("", response_model=ResidualRidgeAssessment, status_code=status.HTTP_200_OK)
 def update_residual_ridge_assessment_endpoint(
     chart_id: uuid.UUID,
     payload: ResidualRidgeAssessmentUpdate,
     session: Session = Depends(get_session),
-) -> dict[str, Any]:
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    item = update_residual_ridge_assessment(session, chart_id, payload)
-
-    return {
-        "assessment_id": item.assessment_id,
-        "chart_id": item.chart_id,
-        "updated_at": item.updated_at,
-        **updates,
-    }
+) -> ResidualRidgeAssessment:
+    return update_residual_ridge_assessment(session, chart_id, payload)
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)

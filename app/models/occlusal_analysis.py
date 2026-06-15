@@ -21,6 +21,7 @@ class OcclusalAnalysisBase(SQLModel):
     canine_right: MolarType | None = None
     canine_left: MolarType | None = None
     lateral_direction: LateralDirectionType | None = None
+    note: str | None = None
 
 class OcclusalAnalysis(OcclusalAnalysisBase, table=True):
     __tablename__ = "occlusal_analysis"
@@ -67,3 +68,4 @@ class OcclusalAnalysisUpdate(SQLModel):
     canine_right: MolarType | None = None
     canine_left: MolarType | None = None
     lateral_direction: LateralDirectionType | None = None
+    note: str | None = None

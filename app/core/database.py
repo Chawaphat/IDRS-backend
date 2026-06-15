@@ -1,8 +1,13 @@
 import os
+import time
+import logging
 from collections.abc import Generator
 
-from sqlalchemy import text
+from sqlalchemy import text, event
+from sqlalchemy.exc import OperationalError
 from sqlmodel import Session, SQLModel, create_engine
+
+logger = logging.getLogger(__name__)
 
 try:
     from dotenv import load_dotenv
@@ -19,7 +24,7 @@ DATABASE_URL = os.getenv(
 DB_POOL_SIZE = int(os.getenv("DB_POOL_SIZE", "5"))
 DB_MAX_OVERFLOW = int(os.getenv("DB_MAX_OVERFLOW", "10"))
 DB_POOL_TIMEOUT = int(os.getenv("DB_POOL_TIMEOUT", "30"))
-DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "300"))  # 5 min — Supabase drops idle connections ~10 min
+DB_POOL_RECYCLE = int(os.getenv("DB_POOL_RECYCLE", "120"))  # 2 min — Supabase drops idle connections ~5 min
 DB_POOL_PRE_PING = os.getenv("DB_POOL_PRE_PING", "true").lower() == "true"
 
 engine = create_engine(
@@ -55,6 +60,7 @@ def _add_missing_columns(table_name: str, required: dict[str, str]) -> None:
     if not missing:
         return
     with engine.begin() as conn:
+        conn.execute(text("SET LOCAL statement_timeout = 0"))
         for col, typ in missing.items():
             conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col} {typ}"))
 
@@ -87,6 +93,7 @@ def ensure_occlusal_analysis_schema() -> None:
         "canine_right":       "canine_right_type",
         "canine_left":        "canine_left_type",
         "lateral_direction":  "lateral_direction_type",
+        "note":               "TEXT",
     })
 
 
@@ -148,11 +155,27 @@ def ensure_residual_ridge_assessment_schema() -> None:
         "lip_mobility":        "lip_mobility_type",
         "facial_muscle_tone":  "facial_muscle_tone_type",
         "mental_attitude":     "mental_attitude_type",
+        "note":                "TEXT",
         "created_at":          "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()",
         "updated_at":          "TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT now()",
     })
 
 
 def get_session() -> Generator[Session, None, None]:
-    with Session(engine) as session:
+    last_err: Exception | None = None
+    for attempt in range(3):
+        try:
+            session = Session(engine)
+            break
+        except OperationalError as e:
+            last_err = e
+            logger.warning(f"DB checkout failed, retrying ({attempt + 1}/3)...")
+            engine.dispose()
+            time.sleep(0.5 * (attempt + 1))
+    else:
+        raise last_err  # type: ignore[misc]
+
+    try:
         yield session
+    finally:
+        session.close()

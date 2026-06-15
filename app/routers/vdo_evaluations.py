@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import uuid
-from typing import Any
 
 from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
@@ -30,28 +29,21 @@ def create_vdo_evaluation_endpoint(
     return create_vdo_evaluation(session, chart_id, payload)
 
 
-@router.get("", response_model=VdoEvaluation, status_code=status.HTTP_200_OK)
+@router.get("", response_model=VdoEvaluation | None, status_code=status.HTTP_200_OK)
 def get_vdo_evaluation_endpoint(
     chart_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> VdoEvaluation:
+) -> VdoEvaluation | None:
     return get_vdo_evaluation_by_chart_id(session, chart_id)
 
 
-@router.put("", response_model=dict[str, Any], status_code=status.HTTP_200_OK)
+@router.put("", response_model=VdoEvaluation, status_code=status.HTTP_200_OK)
 def update_vdo_evaluation_endpoint(
     chart_id: uuid.UUID,
     payload: VdoEvaluationUpdate,
     session: Session = Depends(get_session),
-) -> dict[str, Any]:
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    item = update_vdo_evaluation(session, chart_id, payload)
-
-    return {
-        "vdo_id": item.vdo_id,
-        "chart_id": item.chart_id,
-        **updates,
-    }
+) -> VdoEvaluation:
+    return update_vdo_evaluation(session, chart_id, payload)
 
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)
