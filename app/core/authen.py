@@ -37,7 +37,8 @@ def verify_token(
             token,
             signing_key.key,
             algorithms=["RS256", "ES256", "HS256"],
-            audience="authenticated"
+            audience="authenticated",
+            leeway=30,  # 30s leeway for clock skew between client and Supabase
         )
 
         return payload

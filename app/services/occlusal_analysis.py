@@ -54,7 +54,23 @@ def delete_occlusal_analysis(session: Session, chart_id: uuid.UUID) -> None:
 
 
 def get_occlusal_analysis_record(session: Session, chart_id: uuid.UUID) -> dict[str, Any] | None:
-    occlusal = get_occlusal_analysis_by_chart_id(session, chart_id)  # ← ใช้ function เดิมที่มี 404 อยู่แล้ว ไม่ต้อง query ซ้ำ
+    statement = select(OcclusalAnalysis).where(OcclusalAnalysis.chart_id == chart_id)
+    occlusal = session.exec(statement).first()
+    if not occlusal:
+        return {
+            "occlusal_id": None,
+            "chart_id": str(chart_id),
+            "right_molar": None,
+            "left_molar": None,
+            "overlap_horizontal": None,
+            "overlap_vertical": None,
+            "anterior_slide": None,
+            "lateral_slide": None,
+            "canine_right": None,
+            "canine_left": None,
+            "lateral_direction": None,
+            "contacts": {ct.value: [] for ct in ContactType},
+        }
 
     contacts = list(session.exec(
         select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
@@ -77,5 +93,8 @@ def get_occlusal_analysis_record(session: Session, chart_id: uuid.UUID) -> dict[
         "overlap_vertical": occlusal.overlap_vertical,
         "anterior_slide": occlusal.anterior_slide,
         "lateral_slide": occlusal.lateral_slide,
+        "canine_right": occlusal.canine_right,
+        "canine_left": occlusal.canine_left,
+        "lateral_direction": occlusal.lateral_direction,
         "contacts": grouped
     }

@@ -90,6 +90,7 @@ class ResidualRidgeAssessmentBase(SQLModel):
     mental_attitude: MentalAttitudeType | None = Field(
         default=None, sa_column=Column(SAEnum(MentalAttitudeType, name="mental_attitude_type"))
     )
+    note: str | None = None
 
 
 class ResidualRidgeAssessment(ResidualRidgeAssessmentBase, table=True):
@@ -137,3 +138,4 @@ class ResidualRidgeAssessmentUpdate(SQLModel):
     lip_mobility: LipMobilityType | None = None
     facial_muscle_tone: FacialMuscleToneType | None = None
     mental_attitude: MentalAttitudeType | None = None
+    note: str | None = None

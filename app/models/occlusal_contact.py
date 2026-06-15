@@ -1,7 +1,7 @@
 import uuid
 from typing import TYPE_CHECKING
 
-from sqlalchemy import Column, Enum as SAEnum
+from sqlalchemy import Column, Enum as SAEnum, UniqueConstraint
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.enums import ContactType
@@ -22,6 +22,13 @@ class OcclusalContact(SQLModel, table=True):
     lower_tooth: int 
 
     occlusal_analysis: "OcclusalAnalysis" = Relationship(back_populates="contacts")
+
+    __table_args__ = (
+        UniqueConstraint(
+            "occlusal_id", "contact_type", "upper_tooth", "lower_tooth",
+            name="uq_occlusal_contact_type_teeth"
+        ),
+    )
 
 
 class OcclusalContactCreate(SQLModel):

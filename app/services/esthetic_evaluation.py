@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.esthetic_evaluation import (
@@ -29,6 +28,7 @@ def get_esthetic_evaluation_by_id(session: Session, esthetic_id: uuid.UUID) -> E
 
 
 def get_esthetic_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> EstheticEvaluation | None:
+    """Return the chart's esthetic evaluation, or None if it doesn't exist yet."""
     statement = select(EstheticEvaluation).where(EstheticEvaluation.chart_id == chart_id)
     return session.exec(statement).first()
 
@@ -47,21 +47,23 @@ def update_esthetic_evaluation(
     chart_id: uuid.UUID,
     payload: EstheticEvaluationUpdate,
 ) -> EstheticEvaluation:
-    statement = select(EstheticEvaluation).where(EstheticEvaluation.chart_id == chart_id)
-    item = session.exec(statement).first()
+    """Upsert the chart's esthetic evaluation: update if it exists, otherwise create it.
 
-    if not item:
-        # Create a new item if it doesn't exist
-        create_payload = EstheticEvaluationCreate(**payload.model_dump(exclude_unset=True, exclude_none=True))
-        item = EstheticEvaluation.model_validate({**create_payload.model_dump(), "chart_id": chart_id})
-        session.add(item)
+    Uses exclude_unset (NOT exclude_none) so an explicit null clears a field instead
+    of leaving the previously saved value in place.
+    """
+    item = session.exec(
+        select(EstheticEvaluation).where(EstheticEvaluation.chart_id == chart_id)
+    ).first()
+    updates = payload.model_dump(exclude_unset=True)
+
+    if item is None:
+        item = EstheticEvaluation.model_validate({**updates, "chart_id": chart_id})
     else:
-        # Update existing item
-        updates = payload.model_dump(exclude_unset=True, exclude_none=True)
         for key, value in updates.items():
             setattr(item, key, value)
-        session.add(item)
-        
+
+    session.add(item)
     session.commit()
     session.refresh(item)
     return item
@@ -69,8 +71,6 @@ def update_esthetic_evaluation(
 
 def delete_esthetic_evaluation(session: Session, chart_id: uuid.UUID) -> None:
     item = get_esthetic_evaluation_by_chart_id(session, chart_id)
-    if item:
+    if item is not None:
         session.delete(item)
         session.commit()
-    else:
-        raise HTTPException(status_code=404, detail="Esthetic evaluation not found")

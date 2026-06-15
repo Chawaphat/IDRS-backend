@@ -6,6 +6,7 @@ load_dotenv()
 from app.core.database import create_db_and_tables
 from app.core.authen import get_current_profile, require_admin, require_chart_editor
 from app.routers import (
+    auth_router,
     ai_detection_results_router,
     dental_charts_router,
     dental_status_router,
@@ -46,6 +47,12 @@ app.add_middleware(
 def on_startup() -> None:
     create_db_and_tables()
 
+
+app.include_router(
+    auth_router,
+    prefix="/auth",
+    tags=["auth"],
+)
 
 app.include_router(
     profiles_router,

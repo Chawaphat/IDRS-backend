@@ -2,7 +2,6 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.vdo_evaluation import VdoEvaluation, VdoEvaluationCreate, VdoEvaluationUpdate
@@ -20,12 +19,14 @@ def get_vdo_evaluation_by_id(session: Session, vdo_id: uuid.UUID) -> VdoEvaluati
     return session.get(VdoEvaluation, vdo_id)
 
 
-def get_vdo_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> VdoEvaluation:
+def get_vdo_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> VdoEvaluation | None:
+    """Return the chart's VDO evaluation, or None if it doesn't exist yet.
+
+    A missing record is normal for a fresh chart, so the GET endpoint can return
+    None (empty) instead of a 404 that the UI would surface as an error.
+    """
     statement = select(VdoEvaluation).where(VdoEvaluation.chart_id == chart_id)
-    item = session.exec(statement).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="VDO evaluation not found")
-    return item
+    return session.exec(statement).first()
 
 
 def get_all_vdo_evaluations(session: Session, skip: int = 0, limit: int = 100) -> list[VdoEvaluation]:
@@ -38,10 +39,22 @@ def update_vdo_evaluation(
     chart_id: uuid.UUID,
     payload: VdoEvaluationUpdate,
 ) -> VdoEvaluation:
-    item = get_vdo_evaluation_by_chart_id(session, chart_id)
-    updates = payload.model_dump(exclude_unset=True, exclude_none=True)
-    for key, value in updates.items():
-        setattr(item, key, value)
+    """Upsert the chart's VDO evaluation: update if it exists, otherwise create it.
+
+    Uses exclude_unset (NOT exclude_none) so an explicit null clears a field instead
+    of leaving the previously saved value in place.
+    """
+    item = session.exec(
+        select(VdoEvaluation).where(VdoEvaluation.chart_id == chart_id)
+    ).first()
+    updates = payload.model_dump(exclude_unset=True)
+
+    if item is None:
+        item = VdoEvaluation.model_validate({**updates, "chart_id": chart_id})
+    else:
+        for key, value in updates.items():
+            setattr(item, key, value)
+
     session.add(item)
     session.commit()
     session.refresh(item)
@@ -50,5 +63,6 @@ def update_vdo_evaluation(
 
 def delete_vdo_evaluation(session: Session, chart_id: uuid.UUID) -> None:
     item = get_vdo_evaluation_by_chart_id(session, chart_id)
-    session.delete(item)
-    session.commit()
+    if item is not None:
+        session.delete(item)
+        session.commit()

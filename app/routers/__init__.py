@@ -1,3 +1,4 @@
+from app.routers.auth import router as auth_router
 from app.routers.ai_detection_results import router as ai_detection_results_router
 from app.routers.dental_charts import router as dental_charts_router
 from app.routers.dental_status import router as dental_status_router
@@ -32,6 +33,7 @@ from app.routers.residual_ridge_assessments import (
 
 
 __all__ = [
+	"auth_router",
 	"ai_detection_results_router",
 	"dental_charts_router",
 	"dental_status_router",

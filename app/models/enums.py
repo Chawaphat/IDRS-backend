@@ -120,6 +120,10 @@ class MolarType(str, Enum):
     class_ii = "class_ii"
     class_iii = "class_iii"
 
+class LateralDirectionType(str, Enum):
+    right = "right"
+    left = "left"
+
 
 class ImageCategory(str, Enum):
     intraoral = "intraoral"

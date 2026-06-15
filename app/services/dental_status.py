@@ -1,7 +1,7 @@
 # services/dental_status.py
 
 import uuid
-from sqlmodel import Session, select
+from sqlmodel import Session, select, delete
 from app.models.dental_status import DentalStatus
 from app.models.tooth_record import ToothRecord
 from app.models.tooth_edentulous import ToothEdentulous
@@ -18,6 +18,37 @@ from app.schemas.dental_status import (
     PeriodontalResponse, VitalityResponse, RestorationResponse,
     ImplantResponse,
 )
+
+TOOTH_CHILD_MODELS = (
+    ToothEdentulous,
+    ToothCaries,
+    ToothFilling,
+    ToothPeriodontal,
+    ToothVitality,
+    ToothRestoration,
+    ToothImplant,
+)
+
+
+def _delete_teeth_for_status(session: Session, status_id: uuid.UUID) -> None:
+    teeth = list(session.exec(
+        select(ToothRecord).where(ToothRecord.status_id == status_id)
+    ).all())
+
+    if not teeth:
+        return
+
+    tooth_ids = [tooth.tooth_id for tooth in teeth]
+
+    for model in TOOTH_CHILD_MODELS:
+        session.exec(
+            delete(model).where(model.tooth_id.in_(tooth_ids)).execution_options(synchronize_session=False)
+        )
+
+    session.exec(
+        delete(ToothRecord).where(ToothRecord.tooth_id.in_(tooth_ids)).execution_options(synchronize_session=False)
+    )
+
 
 def _build_response(session: Session, status: DentalStatus) -> DentalStatusResponse:
     
@@ -186,11 +217,7 @@ def create_or_replace_dental_status(
         session.add(status)
         session.flush()
 
-    for tooth in session.exec(
-        select(ToothRecord).where(ToothRecord.status_id == status.status_id)
-    ).all():
-        session.delete(tooth)
-    session.flush()
+    _delete_teeth_for_status(session, status.status_id)
 
     for td in payload.teeth:
         tooth = ToothRecord(
@@ -200,8 +227,6 @@ def create_or_replace_dental_status(
             note=td.note,
         )
         session.add(tooth)
-        session.flush()
-
         
         if td.edentulous:
             session.add(ToothEdentulous(tooth_id=tooth.tooth_id, **td.edentulous.model_dump()))
@@ -249,5 +274,6 @@ def delete_dental_status(
 ) -> None:
     status = session.get(DentalStatus, status_id)
     if status:
+        _delete_teeth_for_status(session, status.status_id)
         session.delete(status)
         session.commit()
