@@ -137,6 +137,7 @@ class TestGetAllPatients:
 
         results = get_all_patients(mock_session, DENTIST_ID)
 
+        mock_session.exec.assert_called() 
         assert len(results) == 1
         assert results[0].patient_id == PATIENT_ID
         assert results[0].status == "Active"
