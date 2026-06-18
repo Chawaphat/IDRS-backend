@@ -2,9 +2,10 @@ from __future__ import annotations
 
 import uuid
 
-from sqlalchemy import delete
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
+from app.models.dental_chart import DentalChart
 from app.models.occlusal_analysis import OcclusalAnalysis
 from app.models.occlusal_contact import OcclusalContact, OcclusalContactBulkCreate
 
@@ -25,13 +26,16 @@ def create_and_replace_occlusal_contacts(
     chart_id: uuid.UUID,
     payload: OcclusalContactBulkCreate,
 ) -> list[OcclusalContact]:
+    if session.get(DentalChart, chart_id) is None:
+        raise HTTPException(status_code=404, detail="Chart not found")
     occlusal = get_or_create_occlusal_analysis(session, chart_id)
-    
-    # Bulk delete เก่าทั้งหมดใน 1 SQL statement
-    session.exec(
-        delete(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
-    )
-    
+
+    existing = list(session.exec(
+        select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
+    ).all())
+    for contact in existing:
+        session.delete(contact)
+
     # insert ใหม่ทั้งหมด
     items = [
         OcclusalContact(occlusal_id=occlusal.occlusal_id, **contact.model_dump())

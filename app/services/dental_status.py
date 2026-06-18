@@ -1,6 +1,7 @@
 # services/dental_status.py
 
 import uuid
+from fastapi import HTTPException
 from sqlmodel import Session, select, delete
 from app.models.dental_status import DentalStatus
 from app.models.tooth_record import ToothRecord
@@ -263,7 +264,7 @@ def get_dental_status_by_chart_id(
     ).first()
 
     if not status:
-        return None
+        raise HTTPException(status_code=404, detail="Chart not found")
 
     return _build_response(session, status)
 

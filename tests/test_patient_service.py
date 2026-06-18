@@ -1,6 +1,6 @@
 """
 Tests for app/services/patient.py  +  app/routers/patients.py
-Covers ALL test cases UTC-05 through UTC-11 including failure paths.
+Covers ALL test cases UTC-7 through UTC-13 including failure paths.
 
 Layer split:
   - TestCreate/Get/Update/Delete/Search*  → service-layer (mock session)
@@ -26,14 +26,14 @@ NONEXISTENT_ID = "99999999-9999-9999-9999-999999999999"
 
 
 # ============================================================
-# UTC-05 : create_patient
+# UTC-7 : create_patient
 # ============================================================
 
 class TestCreatePatient:
     """Service-layer tests for create_patient."""
 
     def test_tc01_success_creates_and_returns_patient(self, mock_session):
-        """UTC-05-TC-01: Valid payload → Patient created and returned."""
+        """UTC-7-TC-01: Valid payload → Patient created and returned."""
         from app.models.patient import PatientCreate
         from app.services.patient import create_patient
 
@@ -77,7 +77,7 @@ class TestCreatePatientRouter:
         return client, app
 
     def test_tc02_missing_required_fields_returns_422(self, mock_session):
-        """UTC-05-TC-02: Missing required fields (hn_number, name) → router returns HTTP 422."""
+        """UTC-7-TC-02: Missing required fields (hn_number, name) → router returns HTTP 422."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -100,7 +100,7 @@ class TestCreatePatientRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_no_auth_returns_401(self, mock_session):
-        """UTC-05-TC-02 (auth): No bearer token → 401."""
+        """UTC-7-TC-02 (auth): No bearer token → 401."""
         client, app = self._client_no_auth(mock_session)
         try:
             response = client.post("/patients", json={
@@ -116,14 +116,14 @@ class TestCreatePatientRouter:
 
 
 # ============================================================
-# UTC-06 : get_all_patients
+# UTC-8 : get_all_patients
 # ============================================================
 
 class TestGetAllPatients:
     """Service-layer tests for get_all_patients."""
 
     def test_tc01_success_returns_patient_list(self, mock_session):
-        """UTC-06-TC-01: Dentist with patients → non-empty list."""
+        """UTC-8-TC-01: Dentist with patients → non-empty list."""
         from app.services.patient import get_all_patients
 
         patient = make_patient(patient_id=PATIENT_ID, dentist_id=DENTIST_ID)
@@ -143,7 +143,7 @@ class TestGetAllPatients:
         assert results[0].status == "Active"
 
     def test_tc03_empty_list_when_no_patients(self, mock_session):
-        """UTC-06-TC-03: Dentist with no patients → []."""
+        """UTC-8-TC-03: Dentist with no patients → []."""
         from app.services.patient import get_all_patients
 
         mock_session.exec.return_value = MagicMock(all=MagicMock(return_value=[]))
@@ -151,10 +151,10 @@ class TestGetAllPatients:
 
 
 class TestGetAllPatientsRouter:
-    """Router-layer: UTC-06-TC-02 — no auth → 401."""
+    """Router-layer: UTC-8-TC-02 — no auth → 401."""
 
     def test_tc02_no_auth_returns_401(self, mock_session):
-        """UTC-06-TC-02: No bearer token → 401."""
+        """UTC-8-TC-02: No bearer token → 401."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -173,14 +173,14 @@ class TestGetAllPatientsRouter:
 
 
 # ============================================================
-# UTC-07 : get_patient_by_id
+# UTC-9 : get_patient_by_id
 # ============================================================
 
 class TestGetPatientById:
     """Service-layer tests for get_patient_by_id."""
 
     def test_tc01_success_returns_patient(self, mock_session):
-        """UTC-07-TC-01: Existing patient → returned."""
+        """UTC-9-TC-01: Existing patient → returned."""
         from app.services.patient import get_patient_by_id
 
         patient = make_patient(patient_id=PATIENT_ID, dentist_id=DENTIST_ID)
@@ -190,7 +190,7 @@ class TestGetPatientById:
         assert result.patient_id == PATIENT_ID
 
     def test_tc03_not_found_raises_404(self, mock_session):
-        """UTC-07-TC-03: Non-existent patient → 404."""
+        """UTC-9-TC-03: Non-existent patient → 404."""
         from app.services.patient import get_patient_by_id
 
         mock_session.get.return_value = None
@@ -213,10 +213,10 @@ class TestGetPatientById:
 
 
 class TestGetPatientByIdRouter:
-    """Router-layer: UTC-07-TC-02 — no auth → 401."""
+    """Router-layer: UTC-9-TC-02 — no auth → 401."""
 
     def test_tc02_no_auth_returns_401(self, mock_session):
-        """UTC-07-TC-02: No bearer token → 401."""
+        """UTC-9-TC-02: No bearer token → 401."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -235,14 +235,14 @@ class TestGetPatientByIdRouter:
 
 
 # ============================================================
-# UTC-08 : update_patient
+# UTC-10 : update_patient
 # ============================================================
 
 class TestUpdatePatient:
     """Service-layer tests for update_patient."""
 
     def test_tc01_success_updates_patient(self, mock_session):
-        """UTC-08-TC-01: Valid update → updated patient returned."""
+        """UTC-10-TC-01: Valid update → updated patient returned."""
         from app.models.patient import PatientUpdate
         from app.services.patient import update_patient
 
@@ -256,7 +256,7 @@ class TestUpdatePatient:
         mock_session.commit.assert_called_once()
 
     def test_tc03_not_found_raises_404(self, mock_session):
-        """UTC-08-TC-03: Non-existent patient → 404."""
+        """UTC-10-TC-03: Non-existent patient → 404."""
         from app.models.patient import PatientUpdate
         from app.services.patient import update_patient
 
@@ -268,7 +268,7 @@ class TestUpdatePatient:
 
 
 class TestUpdatePatientRouter:
-    """Router-layer: UTC-08-TC-02 (401) and UTC-08-TC-04 (422)."""
+    """Router-layer: UTC-10-TC-02 (401) and UTC-10-TC-04 (422)."""
 
     def _authed_client(self, mock_session, app):
         from app.core.database import get_session
@@ -278,7 +278,7 @@ class TestUpdatePatientRouter:
         return TestClient(app, raise_server_exceptions=False)
 
     def test_tc02_no_auth_returns_401(self, mock_session):
-        """UTC-08-TC-02: No bearer token → 401."""
+        """UTC-10-TC-02: No bearer token → 401."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -296,7 +296,7 @@ class TestUpdatePatientRouter:
             app.dependency_overrides.clear()
 
     def test_tc04_invalid_data_type_returns_422(self, mock_session):
-        """UTC-08-TC-04: age='george russell' (string where int expected) → router returns HTTP 422."""
+        """UTC-10-TC-04: age='george russell' (string where int expected) → router returns HTTP 422."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -318,14 +318,14 @@ class TestUpdatePatientRouter:
 
 
 # ============================================================
-# UTC-09 : delete_patient
+# UTC-11 : delete_patient
 # ============================================================
 
 class TestDeletePatient:
     """Service-layer tests for delete_patient."""
 
     def test_tc01_success_deletes_patient(self, mock_session):
-        """UTC-09-TC-01: Existing patient → deleted (service returns None, router returns 204).
+        """UTC-11-TC-01: Existing patient → deleted (service returns None, router returns 204).
 
         The document expected output shows {"message": "Patient deleted successfully"}
         but the actual implementation returns HTTP 204 No Content (no body).
@@ -345,7 +345,7 @@ class TestDeletePatient:
         assert result is None, "service must return None (router sends 204 No Content, not a message body)"
 
     def test_tc01_router_returns_204(self, mock_session):
-        """UTC-09-TC-01 (router layer): Successful delete → HTTP 204 No Content, empty body."""
+        """UTC-11-TC-01 (router layer): Successful delete → HTTP 204 No Content, empty body."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -364,7 +364,7 @@ class TestDeletePatient:
             app.dependency_overrides.clear()
 
     def test_tc03_not_found_raises_404(self, mock_session):
-        """UTC-09-TC-03: Non-existent patient → 404."""
+        """UTC-11-TC-03: Non-existent patient → 404."""
         from app.services.patient import delete_patient
 
         mock_session.get.return_value = None
@@ -375,10 +375,10 @@ class TestDeletePatient:
 
 
 class TestDeletePatientRouter:
-    """Router-layer: UTC-09-TC-02 — no auth → 401."""
+    """Router-layer: UTC-11-TC-02 — no auth → 401."""
 
     def test_tc02_no_auth_returns_401(self, mock_session):
-        """UTC-09-TC-02: No bearer token → 401."""
+        """UTC-11-TC-02: No bearer token → 401."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile
@@ -397,14 +397,14 @@ class TestDeletePatientRouter:
 
 
 # ============================================================
-# UTC-10 : search_patients
+# UTC-12 : search_patients
 # ============================================================
 
 class TestSearchPatients:
     """Service-layer tests for search_patients."""
 
     def test_tc01_success_by_name(self, mock_session):
-        """UTC-10-TC-01: Search by name → matching patient returned."""
+        """UTC-12-TC-01: Search by name → matching patient returned."""
         from app.services.patient import search_patients
 
         patient = make_patient(patient_id=PATIENT_ID, dentist_id=DENTIST_ID, name="John Doe")
@@ -421,7 +421,7 @@ class TestSearchPatients:
         assert "John" in results[0].name
 
     def test_tc02_success_by_hn_number(self, mock_session):
-        """UTC-10-TC-02: Search by HN number → matching patient returned."""
+        """UTC-12-TC-02: Search by HN number → matching patient returned."""
         from app.services.patient import search_patients
 
         patient = make_patient(patient_id=PATIENT_ID, dentist_id=DENTIST_ID, hn_number="HN001")
@@ -438,7 +438,7 @@ class TestSearchPatients:
         assert results[0].hn_number == "HN001"
 
     def test_tc03_no_match_returns_empty_list(self, mock_session):
-        """UTC-10-TC-03: No matching patient → []."""
+        """UTC-12-TC-03: No matching patient → []."""
         from app.services.patient import search_patients
 
         mock_session.exec.return_value = MagicMock(all=MagicMock(return_value=[]))
@@ -446,14 +446,14 @@ class TestSearchPatients:
 
 
 # ============================================================
-# UTC-11 : get_patient_dental_charts
+# UTC-13 : get_patient_dental_charts
 # ============================================================
 
 class TestGetPatientDentalCharts:
     """Service-layer tests for get_patient_dental_charts."""
 
     def test_tc01_success_returns_charts(self, mock_session):
-        """UTC-11-TC-01: Patient with charts → list of DentalChart."""
+        """UTC-13-TC-01: Patient with charts → list of DentalChart."""
         from app.services.patient import get_patient_dental_charts
 
         chart = make_chart(chart_id=CHART_ID, patient_id=PATIENT_ID)
@@ -469,7 +469,7 @@ class TestGetPatientDentalCharts:
 
     def test_tc02_no_charts_raises_404(self, mock_session):
         """
-        UTC-11-TC-02: Patient exists but has no dental chart records.
+        UTC-13-TC-02: Patient exists but has no dental chart records.
 
         SPEC vs IMPLEMENTATION DIVERGENCE (known):
           - Spec (FullUnitest.md) expects: returns empty list [].
@@ -492,7 +492,7 @@ class TestGetPatientDentalCharts:
 
     def test_tc03_nonexistent_patient_raises_404(self, mock_session):
         """
-        UTC-11-TC-03: Non-existent patient_id → 404 "Dental charts not found for this patient".
+        UTC-13-TC-03: Non-existent patient_id → 404 "Dental charts not found for this patient".
         Implementation cannot distinguish "no charts" (TC-02) from "no patient" (TC-03)
         — both result in 404 because the service queries charts by patient_id only.
         """
@@ -506,10 +506,10 @@ class TestGetPatientDentalCharts:
 
 
 class TestGetPatientDentalChartsRouter:
-    """Router-layer: UTC-11-TC-04 — no auth → 401."""
+    """Router-layer: UTC-13-TC-04 — no auth → 401."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-11-TC-04: No bearer token → 401."""
+        """UTC-13-TC-04: No bearer token → 401."""
         from app.main import app
         from app.core.database import get_session
         from app.core.authen import get_current_profile

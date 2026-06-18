@@ -22,7 +22,7 @@ from app.models.occlusal_analysis import (
 router = APIRouter()
 admin_router = APIRouter()
 
-@router.put("", response_model=OcclusalAnalysis, status_code=status.HTTP_200_OK)
+@router.put("", response_model=OcclusalAnalysis, status_code=status.HTTP_201_CREATED)
 def upsert_occlusal_analysis_endpoint(
     chart_id: uuid.UUID,
     payload: OcclusalAnalysisCreate,
@@ -36,6 +36,8 @@ def get_occlusal_analysis_record_endpoint(
     session: Session = Depends(get_session),
 ) -> dict[str, Any]:
     result = get_occlusal_analysis_record(session, chart_id)
+    if result["occlusal_id"] is None:
+        raise HTTPException(status_code=404, detail="Occlusal analysis not found")
     return result
 
 @router.delete("", status_code=status.HTTP_204_NO_CONTENT)

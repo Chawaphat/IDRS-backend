@@ -1,15 +1,15 @@
 """
 Tests for app/services/vdo_evaluation.py  +  app/routers/vdo_evaluations.py
-Covers ALL test cases UTC-23, UTC-24, UTC-25.
+Covers ALL test cases UTC-25, UTC-26, UTC-27.
 
 Router prefix (from app/main.py):
   POST/GET/PUT/DELETE  →  /dental-charts/{chart_id}/vdo-evaluation
 
 Behavioural notes:
   - All VdoEvaluationBase fields are optional — empty payload is valid at schema level.
-  - UTC-23-TC-03: spec triggers 422 via invalid bite_type enum value ("") → tested.
-  - get_vdo_evaluation_by_chart_id raises 404 correctly (matches spec for UTC-24-TC-02).
-  - update_vdo_evaluation raises 404 when record absent (matches spec for UTC-25-TC-02).
+  - UTC-25-TC-03: spec triggers 422 via invalid bite_type enum value ("") → tested.
+  - get_vdo_evaluation_by_chart_id raises 404 correctly (matches spec for UTC-26-TC-02).
+  - update_vdo_evaluation raises 404 when record absent (matches spec for UTC-27-TC-02).
 """
 import uuid
 from unittest.mock import MagicMock
@@ -32,7 +32,7 @@ NONEXISTENT = uuid.UUID("99999999-9999-9999-9999-999999999999")
 BASE_URL    = f"/dental-charts/{CHART_ID}/vdo-evaluation"
 
 # ---------------------------------------------------------------------------
-# Valid payload dict (matches UTC-23-TC-01)
+# Valid payload dict (matches UTC-25-TC-01)
 # ---------------------------------------------------------------------------
 VALID_PAYLOAD = {
     "facial_soft_tissue": ["nasolabial_fold", "thin_lips"],
@@ -89,14 +89,14 @@ def _unauthed_client(mock_session):
 
 
 # ============================================================
-# UTC-23 : create_vdo_evaluation
+# UTC-25 : create_vdo_evaluation
 # ============================================================
 
 class TestCreateVdoEvaluation:
     """Service-layer tests for create_vdo_evaluation."""
 
     def test_tc01_success_creates_and_returns_evaluation(self, mock_session):
-        """UTC-23-TC-01: Valid payload → VdoEvaluation created and returned."""
+        """UTC-25-TC-01: Valid payload → VdoEvaluation created and returned."""
         from app.models.vdo_evaluation import VdoEvaluationCreate
         from app.services.vdo_evaluation import create_vdo_evaluation
 
@@ -118,25 +118,22 @@ class TestCreateVdoEvaluation:
         assert result.free_way_space == 3.0
         assert result.reference_teeth == [11, 21, 31, 41]
 
-    def test_tc02_nonexistent_chart_service_does_not_validate_fk(self, mock_session):
-        """
-        UTC-23-TC-02: chart_id does not exist.
-        ⚠ Spec expects: 404 "Chart not found".
-        ⚠ Actual: service does NOT validate chart FK — creates record without checking.
-           DB would raise IntegrityError on commit in production.
-        Test documents actual implementation behaviour.
-        """
+    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
+        """UTC-25-TC-02: chart_id does not exist → 404 'Chart not found'."""
         from app.models.vdo_evaluation import VdoEvaluationCreate
         from app.services.vdo_evaluation import create_vdo_evaluation
 
         payload = VdoEvaluationCreate(**VALID_PAYLOAD)
-        mock_session.refresh.side_effect = lambda obj: setattr(obj, "vdo_id", VDO_ID)
+        mock_session.get.return_value = None
 
-        result = create_vdo_evaluation(mock_session, NONEXISTENT, payload)
-        assert result.chart_id == NONEXISTENT
+        with pytest.raises(HTTPException) as exc:
+            create_vdo_evaluation(mock_session, NONEXISTENT, payload)
+
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
 
     def test_tc03_invalid_bite_type_raises_validation_error(self):
-        """UTC-23-TC-03: Invalid enum value for bite_type → Pydantic ValidationError (422)."""
+        """UTC-25-TC-03: Invalid enum value for bite_type → Pydantic ValidationError (422)."""
         from app.models.vdo_evaluation import VdoEvaluationCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -146,7 +143,7 @@ class TestCreateVdoEvaluation:
         assert "bite_type" in error_fields
 
     def test_tc03_invalid_facial_soft_tissue_raises_validation_error(self):
-        """UTC-23-TC-03: Invalid enum value in facial_soft_tissue list → ValidationError."""
+        """UTC-25-TC-03: Invalid enum value in facial_soft_tissue list → ValidationError."""
         from app.models.vdo_evaluation import VdoEvaluationCreate
 
         with pytest.raises(pydantic.ValidationError):
@@ -154,10 +151,10 @@ class TestCreateVdoEvaluation:
 
 
 class TestCreateVdoEvaluationRouter:
-    """Router-layer: UTC-23-TC-04 (401), UTC-23-TC-03 (422)."""
+    """Router-layer: UTC-25-TC-04 (401), UTC-25-TC-03 (422)."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-23-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-25-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.post(BASE_URL, json=VALID_PAYLOAD)
@@ -166,7 +163,7 @@ class TestCreateVdoEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_bite_type_via_http_returns_422(self, mock_session):
-        """UTC-23-TC-03 (HTTP): Invalid bite_type enum → 422."""
+        """UTC-25-TC-03 (HTTP): Invalid bite_type enum → 422."""
         client, app = _authed_client(mock_session)
         try:
             bad_payload = {**VALID_PAYLOAD, "bite_type": "not_a_bite_type"}
@@ -176,7 +173,7 @@ class TestCreateVdoEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_201(self, mock_session):
-        """UTC-23-TC-01 (HTTP): Valid payload → 201 Created with vdo_id."""
+        """UTC-25-TC-01 (HTTP): Valid payload → 201 Created with vdo_id."""
         mock_session.refresh.side_effect = lambda obj: setattr(obj, "vdo_id", VDO_ID)
 
         client, app = _authed_client(mock_session)
@@ -193,14 +190,14 @@ class TestCreateVdoEvaluationRouter:
 
 
 # ============================================================
-# UTC-24 : get_vdo_evaluation_by_chart_id
+# UTC-26 : get_vdo_evaluation_by_chart_id
 # ============================================================
 
 class TestGetVdoEvaluation:
     """Service-layer tests for get_vdo_evaluation_by_chart_id."""
 
     def test_tc01_success_returns_evaluation(self, mock_session):
-        """UTC-24-TC-01: Existing chart with VDO evaluation → returned."""
+        """UTC-26-TC-01: Existing chart with VDO evaluation → returned."""
         from app.services.vdo_evaluation import get_vdo_evaluation_by_chart_id
 
         vdo = make_vdo(vdo_id=VDO_ID, chart_id=CHART_ID)
@@ -216,7 +213,7 @@ class TestGetVdoEvaluation:
         assert result.reference_teeth == [11, 21, 31, 41]
 
     def test_tc02_not_found_raises_404(self, mock_session):
-        """UTC-24-TC-02: chart_id has no VDO evaluation → 404 'VDO evaluation not found'."""
+        """UTC-26-TC-02: chart_id has no VDO evaluation → 404 'VDO evaluation not found'."""
         from app.services.vdo_evaluation import get_vdo_evaluation_by_chart_id
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
@@ -228,16 +225,16 @@ class TestGetVdoEvaluation:
         assert "VDO evaluation not found" in exc.value.detail
 
     def test_tc03_empty_chart_id_raises_value_error(self):
-        """UTC-24-TC-03: Empty chart_id string → ValueError (UUID conversion fails)."""
+        """UTC-26-TC-03: Empty chart_id string → ValueError (UUID conversion fails)."""
         with pytest.raises(ValueError):
             uuid.UUID("")
 
 
 class TestGetVdoEvaluationRouter:
-    """Router-layer: UTC-24 — 401, 404, 200."""
+    """Router-layer: UTC-26 — 401, 404, 200."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-24-TC-04: No bearer token → 401."""
+        """UTC-26-TC-04: No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.get(BASE_URL)
@@ -246,7 +243,7 @@ class TestGetVdoEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_not_found_returns_404(self, mock_session):
-        """UTC-24-TC-02 (HTTP): No VDO evaluation for chart → 404."""
+        """UTC-26-TC-02 (HTTP): No VDO evaluation for chart → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -257,7 +254,7 @@ class TestGetVdoEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-24-TC-01 (HTTP): Existing VDO evaluation → 200 with full object."""
+        """UTC-26-TC-01 (HTTP): Existing VDO evaluation → 200 with full object."""
         vdo = make_vdo(vdo_id=VDO_ID, chart_id=CHART_ID)
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=vdo))
 
@@ -277,14 +274,14 @@ class TestGetVdoEvaluationRouter:
 
 
 # ============================================================
-# UTC-25 : update_vdo_evaluation
+# UTC-27 : update_vdo_evaluation
 # ============================================================
 
 class TestUpdateVdoEvaluation:
     """Service-layer tests for update_vdo_evaluation."""
 
     def test_tc01_success_updates_and_returns_evaluation(self, mock_session):
-        """UTC-25-TC-01: Valid update payload → updated VdoEvaluation returned."""
+        """UTC-27-TC-01: Valid update payload → updated VdoEvaluation returned."""
         from app.models.vdo_evaluation import VdoEvaluationUpdate
         from app.models.enums import BiteType, FacialConditionType
         from app.services.vdo_evaluation import update_vdo_evaluation
@@ -310,7 +307,7 @@ class TestUpdateVdoEvaluation:
         assert result.reference_teeth == [13, 23]
 
     def test_tc02_not_found_raises_404(self, mock_session):
-        """UTC-25-TC-02: chart_id has no VDO evaluation → 404."""
+        """UTC-27-TC-02: chart_id has no VDO evaluation → 404."""
         from app.models.vdo_evaluation import VdoEvaluationUpdate
         from app.services.vdo_evaluation import update_vdo_evaluation
 
@@ -328,10 +325,10 @@ class TestUpdateVdoEvaluation:
 
 
 class TestUpdateVdoEvaluationRouter:
-    """Router-layer: UTC-25 — 401, 404, 200."""
+    """Router-layer: UTC-27 — 401, 404, 200."""
 
     def test_tc03_no_auth_returns_401(self, mock_session):
-        """UTC-25-TC-03: No bearer token → 401."""
+        """UTC-27-TC-03: No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={"free_way_space": 2.5})
@@ -340,7 +337,7 @@ class TestUpdateVdoEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_not_found_returns_404(self, mock_session):
-        """UTC-25-TC-02 (HTTP): Non-existent chart → 404."""
+        """UTC-27-TC-02 (HTTP): Non-existent chart → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -352,7 +349,7 @@ class TestUpdateVdoEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-25-TC-01 (HTTP): Valid update → 200 with updated fields."""
+        """UTC-27-TC-01 (HTTP): Valid update → 200 with updated fields."""
         from app.models.enums import BiteType, FacialConditionType
 
         vdo = make_vdo(vdo_id=VDO_ID, chart_id=CHART_ID)

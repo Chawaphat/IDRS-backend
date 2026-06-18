@@ -1,13 +1,13 @@
 """
 Tests for app/services/esthetic_evaluation.py  +  app/routers/esthetic_evaluations.py
-Covers ALL test cases UTC-20, UTC-21, UTC-22.
+Covers ALL test cases UTC-22, UTC-23, UTC-24.
 
 Router prefix (from app/main.py):
   POST/GET/PUT/DELETE  →  /dental-charts/{chart_id}/esthetic-evaluation
 
 ⚠ Behavioural notes (actual code vs. spec):
-  - UTC-21-TC-02: spec says 404 for non-existent chart, but service returns None (200 null).
-  - UTC-22-TC-02: spec says 404 for non-existent chart, but service UPSERTS (creates new record).
+  - UTC-23-TC-02: spec says 404 for non-existent chart, but service returns None (200 null).
+  - UTC-24-TC-02: spec says 404 for non-existent chart, but service UPSERTS (creates new record).
   Tests document the *actual* behaviour; discrepancies are flagged in docstrings.
 """
 import uuid
@@ -105,14 +105,14 @@ def _unauthed_client(mock_session):
 
 
 # ============================================================
-# UTC-20 : create_esthetic_evaluation
+# UTC-22 : create_esthetic_evaluation
 # ============================================================
 
 class TestCreateEstheticEvaluation:
     """Service-layer tests for create_esthetic_evaluation."""
 
     def test_tc01_success_creates_and_returns_evaluation(self, mock_session):
-        """UTC-20-TC-01: Valid payload → EstheticEvaluation created and returned."""
+        """UTC-22-TC-01: Valid payload → EstheticEvaluation created and returned."""
         from app.models.esthetic_evaluation import EstheticEvaluationCreate
         from app.services.esthetic_evaluation import create_esthetic_evaluation
 
@@ -134,26 +134,23 @@ class TestCreateEstheticEvaluation:
         assert result.fv_sound is True
         assert result.reference_teeth == [11, 21]
 
-    def test_tc02_nonexistent_chart_service_does_not_validate(self, mock_session):
-        """
-        UTC-20-TC-02: chart_id does not exist.
-        ⚠ Spec expects: 404 "Chart not found".
-        ⚠ Actual: service does NOT validate chart FK — creates record without checking.
-           DB would raise IntegrityError on commit in production.
-        Test documents actual implementation behaviour.
-        """
+    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
+        """UTC-22-TC-02: chart_id does not exist → 404 'Chart not found'."""
         from app.models.esthetic_evaluation import EstheticEvaluationCreate
         from app.services.esthetic_evaluation import create_esthetic_evaluation
 
         payload = EstheticEvaluationCreate(**VALID_PAYLOAD)
-        mock_session.refresh.side_effect = lambda obj: setattr(obj, "esthetic_id", ESTHETIC_ID)
+        mock_session.get.return_value = None
 
-        result = create_esthetic_evaluation(mock_session, NONEXISTENT, payload)
-        assert result.chart_id == NONEXISTENT
+        with pytest.raises(HTTPException) as exc:
+            create_esthetic_evaluation(mock_session, NONEXISTENT, payload)
+
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
 
     def test_tc03_all_fields_optional_no_validation_error(self):
         """
-        UTC-20-TC-03: Spec says "missing required fields → HTTP 422".
+        UTC-22-TC-03: Spec says "missing required fields → HTTP 422".
 
         SPEC vs IMPLEMENTATION DIVERGENCE (known):
           - Spec expects: HTTP 422 when required fields are absent.
@@ -170,7 +167,7 @@ class TestCreateEstheticEvaluation:
         assert evaluation.occlusal_plane is None
 
     def test_tc03_invalid_enum_raises_validation_error(self):
-        """UTC-20-TC-03 (schema): Invalid enum value for occlusal_plane → Pydantic ValidationError."""
+        """UTC-22-TC-03 (schema): Invalid enum value for occlusal_plane → Pydantic ValidationError."""
         from app.models.esthetic_evaluation import EstheticEvaluationCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -181,10 +178,10 @@ class TestCreateEstheticEvaluation:
 
 
 class TestCreateEstheticEvaluationRouter:
-    """Router-layer: UTC-20-TC-04 (401), UTC-20-TC-03 (422)."""
+    """Router-layer: UTC-22-TC-04 (401), UTC-22-TC-03 (422)."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-20-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-22-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.post(BASE_URL, json=VALID_PAYLOAD)
@@ -193,7 +190,7 @@ class TestCreateEstheticEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_enum_via_http_returns_422(self, mock_session):
-        """UTC-20-TC-03 (HTTP): Invalid enum value for occlusal_plane → router returns 422.
+        """UTC-22-TC-03 (HTTP): Invalid enum value for occlusal_plane → router returns 422.
 
         All EstheticEvaluationCreate fields are optional so an empty body does NOT
         trigger 422.  The only HTTP 422 path is sending an invalid enum value.
@@ -209,7 +206,7 @@ class TestCreateEstheticEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_201(self, mock_session):
-        """UTC-20-TC-01 (HTTP): Valid payload → 201 Created with esthetic_id."""
+        """UTC-22-TC-01 (HTTP): Valid payload → 201 Created with esthetic_id."""
         esthetic = make_esthetic(esthetic_id=ESTHETIC_ID, chart_id=CHART_ID)
         mock_session.refresh.side_effect = lambda obj: setattr(obj, "esthetic_id", ESTHETIC_ID)
 
@@ -225,14 +222,14 @@ class TestCreateEstheticEvaluationRouter:
 
 
 # ============================================================
-# UTC-21 : get_esthetic_evaluation_by_chart_id
+# UTC-23 : get_esthetic_evaluation_by_chart_id
 # ============================================================
 
 class TestGetEstheticEvaluation:
     """Service-layer tests for get_esthetic_evaluation_by_chart_id."""
 
     def test_tc01_success_returns_evaluation(self, mock_session):
-        """UTC-21-TC-01: Existing chart with evaluation → EstheticEvaluation returned."""
+        """UTC-23-TC-01: Existing chart with evaluation → EstheticEvaluation returned."""
         from app.services.esthetic_evaluation import get_esthetic_evaluation_by_chart_id
 
         esthetic = make_esthetic(esthetic_id=ESTHETIC_ID, chart_id=CHART_ID)
@@ -248,7 +245,7 @@ class TestGetEstheticEvaluation:
 
     def test_tc02_nonexistent_chart_returns_none(self, mock_session):
         """
-        UTC-21-TC-02: chart_id has no evaluation.
+        UTC-23-TC-02: chart_id has no evaluation.
         ⚠ Spec says 404, but actual service returns None (no HTTPException).
         """
         from app.services.esthetic_evaluation import get_esthetic_evaluation_by_chart_id
@@ -259,16 +256,16 @@ class TestGetEstheticEvaluation:
         assert result is None  # actual behaviour — not 404
 
     def test_tc03_empty_chart_id_raises_value_error(self):
-        """UTC-21-TC-03: chart_id is empty string → ValueError."""
+        """UTC-23-TC-03: chart_id is empty string → ValueError."""
         with pytest.raises(ValueError):
             uuid.UUID("")
 
 
 class TestGetEstheticEvaluationRouter:
-    """Router-layer: UTC-21 — 401, not found → 200 null (actual), success → 200."""
+    """Router-layer: UTC-23 — 401, not found → 200 null (actual), success → 200."""
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-21 (auth): No bearer token → 401."""
+        """UTC-23 (auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.get(BASE_URL)
@@ -278,7 +275,7 @@ class TestGetEstheticEvaluationRouter:
 
     def test_tc02_not_found_returns_200_null(self, mock_session):
         """
-        UTC-21-TC-02 (HTTP): No evaluation for chart → 200 with null body.
+        UTC-23-TC-02 (HTTP): No evaluation for chart → 200 with null body.
         ⚠ Spec says 404; actual router returns 200 null (response_model=... | None).
         """
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
@@ -292,7 +289,7 @@ class TestGetEstheticEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-21-TC-01 (HTTP): Existing evaluation → 200 with full object."""
+        """UTC-23-TC-01 (HTTP): Existing evaluation → 200 with full object."""
         esthetic = make_esthetic(esthetic_id=ESTHETIC_ID, chart_id=CHART_ID)
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=esthetic))
 
@@ -311,14 +308,14 @@ class TestGetEstheticEvaluationRouter:
 
 
 # ============================================================
-# UTC-22 : update_esthetic_evaluation
+# UTC-24 : update_esthetic_evaluation
 # ============================================================
 
 class TestUpdateEstheticEvaluation:
     """Service-layer tests for update_esthetic_evaluation."""
 
     def test_tc01_success_updates_existing_evaluation(self, mock_session):
-        """UTC-22-TC-01: Evaluation exists → fields updated and returned."""
+        """UTC-24-TC-01: Evaluation exists → fields updated and returned."""
         from app.models.esthetic_evaluation import EstheticEvaluationUpdate
         from app.models.enums import MidlineDiscrepancyType
         from app.services.esthetic_evaluation import update_esthetic_evaluation
@@ -347,7 +344,7 @@ class TestUpdateEstheticEvaluation:
 
     def test_tc02_nonexistent_chart_upserts_new_record(self, mock_session):
         """
-        UTC-22-TC-02: Evaluation does NOT exist for given chart_id.
+        UTC-24-TC-02: Evaluation does NOT exist for given chart_id.
         ⚠ Spec says 404; actual service UPSERTS — creates a new record.
         """
         from app.models.esthetic_evaluation import EstheticEvaluationUpdate
@@ -371,10 +368,10 @@ class TestUpdateEstheticEvaluation:
 
 
 class TestUpdateEstheticEvaluationRouter:
-    """Router-layer: UTC-22 — 401, upsert on missing, success 200."""
+    """Router-layer: UTC-24 — 401, upsert on missing, success 200."""
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-22 (auth): No bearer token → 401."""
+        """UTC-24 (auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={"midline_discrepancy": "right_shift"})
@@ -383,7 +380,7 @@ class TestUpdateEstheticEvaluationRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-22-TC-01 (HTTP): Valid update → 200 with updated fields."""
+        """UTC-24-TC-01 (HTTP): Valid update → 200 with updated fields."""
         from app.models.enums import MidlineDiscrepancyType
 
         esthetic = make_esthetic(esthetic_id=ESTHETIC_ID, chart_id=CHART_ID)
@@ -411,7 +408,7 @@ class TestUpdateEstheticEvaluationRouter:
 
     def test_tc02_nonexistent_chart_upserts_returns_200(self, mock_session):
         """
-        UTC-22-TC-02 (HTTP): chart has no evaluation → service upserts, returns 200.
+        UTC-24-TC-02 (HTTP): chart has no evaluation → service upserts, returns 200.
         ⚠ Spec says 404; actual behaviour is upsert (no error raised).
         """
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))

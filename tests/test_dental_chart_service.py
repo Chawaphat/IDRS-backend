@@ -1,12 +1,12 @@
 """
 Tests for app/services/dental_chart.py  +  app/routers/dental_charts.py
-Covers ALL test cases UTC-12 and UTC-13.
+Covers ALL test cases UTC-14 and UTC-15.
 
 Layer split:
   - TestCreate*/TestDelete* (service)  → mock session, business logic
   - TestCreate*Router / TestDelete*Router → router-layer (401 / 422 / 404 via TestClient)
 
-NOTE on UTC-12-TC-02 / TC-03 (non-existent patient / dentist):
+NOTE on UTC-14-TC-02 / TC-03 (non-existent patient / dentist):
   The service itself does NOT validate foreign-key existence — it delegates that to
   the database. In unit-test scope we verify:
     a) Pydantic rejects a completely missing patient_id / dentist_id (TC-04 / schema),
@@ -62,14 +62,14 @@ def _unauthed_client(mock_session):
 
 
 # ============================================================
-# UTC-12 : create_dental_chart
+# UTC-14 : create_dental_chart
 # ============================================================
 
 class TestCreateDentalChart:
     """Service-layer tests for create_dental_chart."""
 
     def test_tc01_success_creates_and_returns_chart(self, mock_session):
-        """UTC-12-TC-01: Valid payload (existing patient + dentist) → DentalChart returned."""
+        """UTC-14-TC-01: Valid payload (existing patient + dentist) → DentalChart returned."""
         from app.models.dental_chart import DentalChartCreate
         from app.services.dental_chart import create_dental_chart
 
@@ -89,7 +89,7 @@ class TestCreateDentalChart:
         assert chart.chart_id == CHART_ID
 
     def test_tc04_missing_required_fields_raises_validation_error(self):
-        """UTC-12-TC-04: Missing patient_id / dentist_id → Pydantic ValidationError (422)."""
+        """UTC-14-TC-04: Missing patient_id / dentist_id → Pydantic ValidationError (422)."""
         from app.models.dental_chart import DentalChartCreate
 
         # Both patient_id and dentist_id have no defaults → required
@@ -102,7 +102,7 @@ class TestCreateDentalChart:
 
     def test_tc02_invalid_patient_id_format_raises_validation_error(self):
         """
-        UTC-12-TC-02: Spec says "non-existent patient_id → 404 Patient not found".
+        UTC-14-TC-02: Spec says "non-existent patient_id → 404 Patient not found".
 
         SPEC vs IMPLEMENTATION DIVERGENCE (known):
           - Spec expects: HTTP 404 from a FK existence check.
@@ -123,7 +123,7 @@ class TestCreateDentalChart:
 
     def test_tc03_invalid_dentist_id_format_raises_validation_error(self):
         """
-        UTC-12-TC-03: Spec says "non-existent dentist_id → 404 Dentist not found".
+        UTC-14-TC-03: Spec says "non-existent dentist_id → 404 Dentist not found".
 
         SPEC vs IMPLEMENTATION DIVERGENCE (known):
           - Spec expects: HTTP 404 from a FK existence check.
@@ -142,10 +142,10 @@ class TestCreateDentalChart:
 
 
 class TestCreateDentalChartRouter:
-    """Router-layer: UTC-12-TC-05 — no auth → 401."""
+    """Router-layer: UTC-14-TC-05 — no auth → 401."""
 
     def test_tc05_no_auth_returns_401(self, mock_session):
-        """UTC-12-TC-05: No bearer token → 401 Unauthorized."""
+        """UTC-14-TC-05: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.post("/dental-charts", json={
@@ -157,7 +157,7 @@ class TestCreateDentalChartRouter:
             app.dependency_overrides.clear()
 
     def test_tc04_missing_fields_via_http_returns_422(self, mock_session):
-        """UTC-12-TC-04 (HTTP): Empty body sent to router → 422."""
+        """UTC-14-TC-04 (HTTP): Empty body sent to router → 422."""
         client, app = _authed_client(mock_session)
         try:
             response = client.post("/dental-charts", json={})
@@ -167,14 +167,14 @@ class TestCreateDentalChartRouter:
 
 
 # ============================================================
-# UTC-13 : delete_dental_chart
+# UTC-15 : delete_dental_chart
 # ============================================================
 
 class TestDeleteDentalChart:
     """Service-layer tests for delete_dental_chart."""
 
     def test_tc01_success_deletes_chart(self, mock_session):
-        """UTC-13-TC-01: Existing chart → deleted, 204."""
+        """UTC-15-TC-01: Existing chart → deleted, 204."""
         from app.services.dental_chart import delete_dental_chart
 
         chart = make_chart(chart_id=CHART_ID, patient_id=PATIENT_ID, dentist_id=DENTIST_ID)
@@ -186,7 +186,7 @@ class TestDeleteDentalChart:
         mock_session.commit.assert_called_once()
 
     def test_tc02_nonexistent_chart_raises_404(self, mock_session):
-        """UTC-13-TC-02: chart_id not in DB → 404 'Dental chart not found'."""
+        """UTC-15-TC-02: chart_id not in DB → 404 'Dental chart not found'."""
         from app.services.dental_chart import delete_dental_chart
 
         mock_session.get.return_value = None
@@ -198,17 +198,17 @@ class TestDeleteDentalChart:
         assert "Dental chart not found" in exc.value.detail
 
     def test_tc03_invalid_chart_id_format_raises_validation_error(self):
-        """UTC-13-TC-03: chart_id is not a valid UUID → ValueError before service is called."""
+        """UTC-15-TC-03: chart_id is not a valid UUID → ValueError before service is called."""
         with pytest.raises((ValueError, pydantic.ValidationError)):
             # uuid.UUID raises ValueError for non-UUID strings
             invalid_id = uuid.UUID("")
 
 
 class TestDeleteDentalChartRouter:
-    """Router-layer: UTC-13 via HTTP — 404 and 401."""
+    """Router-layer: UTC-15 via HTTP — 404 and 401."""
 
     def test_tc01_success_returns_204(self, mock_session):
-        """UTC-13-TC-01 (HTTP): Valid chart_id → 204 No Content."""
+        """UTC-15-TC-01 (HTTP): Valid chart_id → 204 No Content."""
         from app.services.dental_chart import delete_dental_chart as _orig
 
         chart = make_chart(chart_id=CHART_ID, patient_id=PATIENT_ID, dentist_id=DENTIST_ID)
@@ -222,7 +222,7 @@ class TestDeleteDentalChartRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_nonexistent_chart_returns_404(self, mock_session):
-        """UTC-13-TC-02 (HTTP): Non-existent chart_id → 404."""
+        """UTC-15-TC-02 (HTTP): Non-existent chart_id → 404."""
         mock_session.get.return_value = None
 
         client, app = _authed_client(mock_session)
@@ -233,7 +233,7 @@ class TestDeleteDentalChartRouter:
             app.dependency_overrides.clear()
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-13 (auth): No bearer token on DELETE → 401."""
+        """UTC-15 (auth): No bearer token on DELETE → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.delete(f"/dental-charts/{CHART_ID}")

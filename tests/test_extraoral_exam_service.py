@@ -1,6 +1,6 @@
 """
 Tests for app/services/extraoral_exam.py  +  app/routers/extraoral_exams.py
-Covers ALL test cases UTC-17, UTC-18, UTC-19.
+Covers ALL test cases UTC-19, UTC-20, UTC-21.
 
 Router prefix (from app/main.py):
   POST/GET/PUT/DELETE  →  /dental-charts/{chart_id}/extraoral-exams
@@ -99,14 +99,14 @@ def _unauthed_client(mock_session):
 
 
 # ============================================================
-# UTC-17 : create_extraoral_exam
+# UTC-19 : create_extraoral_exam
 # ============================================================
 
 class TestCreateExtraoralExam:
     """Service-layer tests for create_extraoral_exam."""
 
     def test_tc01_success_creates_and_returns_exam(self, mock_session):
-        """UTC-17-TC-01: Valid payload + existing chart → ExtraoralExam returned."""
+        """UTC-19-TC-01: Valid payload + existing chart → ExtraoralExam returned."""
         from app.models.extraoral_exam import ExtraoralExamCreate
         from app.services.extraoral_exam import create_extraoral_exam
 
@@ -127,7 +127,7 @@ class TestCreateExtraoralExam:
         assert result.facial_profile == "straight"
 
     def test_tc03_missing_required_fields_raises_validation_error(self):
-        """UTC-17-TC-03: facial_symmetry / facial_profile are required → ValidationError (422)."""
+        """UTC-19-TC-03: facial_symmetry / facial_profile are required → ValidationError (422)."""
         from app.models.extraoral_exam import ExtraoralExamCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -138,7 +138,7 @@ class TestCreateExtraoralExam:
         assert "facial_profile" in error_fields
 
     def test_tc03_invalid_enum_value_raises_validation_error(self):
-        """UTC-17-TC-03: Empty string for required enum → ValidationError (422)."""
+        """UTC-19-TC-03: Empty string for required enum → ValidationError (422)."""
         from app.models.extraoral_exam import ExtraoralExamCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -152,10 +152,10 @@ class TestCreateExtraoralExam:
 
 
 class TestCreateExtraoralExamRouter:
-    """Router-layer: UTC-17-TC-04 (401), UTC-17-TC-03 (422)."""
+    """Router-layer: UTC-19-TC-04 (401), UTC-19-TC-03 (422)."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-17-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-19-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.post(BASE_URL, json=VALID_PAYLOAD)
@@ -164,7 +164,7 @@ class TestCreateExtraoralExamRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_missing_required_fields_via_http_returns_422(self, mock_session):
-        """UTC-17-TC-03 (HTTP): Missing facial_symmetry / facial_profile → 422."""
+        """UTC-19-TC-03 (HTTP): Missing facial_symmetry / facial_profile → 422."""
         client, app = _authed_client(mock_session)
         try:
             response = client.post(BASE_URL, json={})
@@ -172,33 +172,30 @@ class TestCreateExtraoralExamRouter:
         finally:
             app.dependency_overrides.clear()
 
-    def test_tc02_nonexistent_chart_no_service_validation(self, mock_session):
-        """
-        UTC-17-TC-02: chart_id does not exist in the database.
-        ⚠ Spec expects: 404 "Chart not found".
-        ⚠ Actual: service does NOT validate chart FK — creates record without checking.
-           DB would raise IntegrityError on commit in production.
-        Test documents actual implementation behaviour.
-        """
+    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
+        """UTC-19-TC-02: chart_id does not exist → 404 'Chart not found'."""
         from app.models.extraoral_exam import ExtraoralExamCreate
         from app.services.extraoral_exam import create_extraoral_exam
 
         payload = ExtraoralExamCreate(**VALID_PAYLOAD)
-        mock_session.refresh.side_effect = lambda obj: setattr(obj, "exam_id", EXAM_ID)
+        mock_session.get.return_value = None
 
-        result = create_extraoral_exam(mock_session, NONEXISTENT, payload)
-        assert result.chart_id == NONEXISTENT
+        with pytest.raises(HTTPException) as exc:
+            create_extraoral_exam(mock_session, NONEXISTENT, payload)
+
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
 
 
 # ============================================================
-# UTC-18 : get_extraoral_exam_by_chart_id
+# UTC-20 : get_extraoral_exam_by_chart_id
 # ============================================================
 
 class TestGetExtraoralExam:
     """Service-layer tests for get_extraoral_exam_by_chart_id."""
 
     def test_tc01_success_returns_exam(self, mock_session):
-        """UTC-18-TC-01: Existing chart with exam → ExtraoralExam returned."""
+        """UTC-20-TC-01: Existing chart with exam → ExtraoralExam returned."""
         from app.services.extraoral_exam import get_extraoral_exam_by_chart_id
 
         exam = make_exam(exam_id=EXAM_ID, chart_id=CHART_ID_2)
@@ -211,7 +208,7 @@ class TestGetExtraoralExam:
         assert result.facial_symmetry == "symmetry"
 
     def test_tc02_nonexistent_chart_raises_404(self, mock_session):
-        """UTC-18-TC-02: chart_id not found → 404 'Extraoral exam not found'."""
+        """UTC-20-TC-02: chart_id not found → 404 'Extraoral exam not found'."""
         from app.services.extraoral_exam import get_extraoral_exam_by_chart_id
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
@@ -223,16 +220,16 @@ class TestGetExtraoralExam:
         assert "Extraoral exam not found" in exc.value.detail
 
     def test_tc03_empty_chart_id_raises_value_error(self):
-        """UTC-18-TC-03: chart_id is empty string → ValueError before service is called."""
+        """UTC-20-TC-03: chart_id is empty string → ValueError before service is called."""
         with pytest.raises(ValueError):
             uuid.UUID("")
 
 
 class TestGetExtraoralExamRouter:
-    """Router-layer: UTC-18 — 401, 404, 200."""
+    """Router-layer: UTC-20 — 401, 404, 200."""
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-18 (auth): No bearer token → 401."""
+        """UTC-20 (auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.get(BASE_URL)
@@ -241,7 +238,7 @@ class TestGetExtraoralExamRouter:
             app.dependency_overrides.clear()
 
     def test_not_found_returns_404(self, mock_session):
-        """UTC-18-TC-02 (HTTP): Chart has no exam → 404."""
+        """UTC-20-TC-02 (HTTP): Chart has no exam → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -252,7 +249,7 @@ class TestGetExtraoralExamRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-18-TC-01 (HTTP): Existing exam → 200 with exam data."""
+        """UTC-20-TC-01 (HTTP): Existing exam → 200 with exam data."""
         exam = make_exam(exam_id=EXAM_ID, chart_id=CHART_ID)
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=exam))
 
@@ -269,14 +266,14 @@ class TestGetExtraoralExamRouter:
 
 
 # ============================================================
-# UTC-19 : update_extraoral_exam
+# UTC-21 : update_extraoral_exam
 # ============================================================
 
 class TestUpdateExtraoralExam:
     """Service-layer tests for update_extraoral_exam."""
 
     def test_tc01_success_updates_and_returns_exam(self, mock_session):
-        """UTC-19-TC-01: Valid update payload → updated ExtraoralExam returned."""
+        """UTC-21-TC-01: Valid update payload → updated ExtraoralExam returned."""
         from app.models.extraoral_exam import ExtraoralExamUpdate
         from app.services.extraoral_exam import update_extraoral_exam
         from app.models.enums import JointSoundType, JawDeviationType
@@ -297,29 +294,38 @@ class TestUpdateExtraoralExam:
         assert result.joint_sound == JointSoundType.popping
         assert result.jaw_deviation == JawDeviationType.to_right
 
-    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
-        """UTC-19-TC-02: chart_id not found → 404 'Extraoral exam not found'."""
+    def test_tc02_creates_new_record_when_none_exists(self, mock_session):
+        """UTC-21-TC-02: No existing exam → upsert creates a new record and returns it."""
         from app.models.extraoral_exam import ExtraoralExamUpdate
         from app.services.extraoral_exam import update_extraoral_exam
+        from app.models.enums import FacialSymmetryType, FacialProfileType, JointSoundType
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
-        with pytest.raises(HTTPException) as exc:
-            update_extraoral_exam(
-                mock_session,
-                NONEXISTENT,
-                ExtraoralExamUpdate(joint_sound="popping"),
-            )
+        def fake_refresh(obj):
+            obj.exam_id = EXAM_ID
 
-        assert exc.value.status_code == 404
-        assert "Extraoral exam not found" in exc.value.detail
+        mock_session.refresh.side_effect = fake_refresh
+
+        payload = ExtraoralExamUpdate(
+            facial_symmetry=FacialSymmetryType.symmetry,
+            facial_profile=FacialProfileType.straight,
+            joint_sound=JointSoundType.clicking,
+        )
+
+        result = update_extraoral_exam(mock_session, CHART_ID, payload)
+
+        mock_session.add.assert_called_once()
+        mock_session.commit.assert_called_once()
+        assert result.chart_id == CHART_ID
+        assert result.facial_symmetry == FacialSymmetryType.symmetry
 
 
 class TestUpdateExtraoralExamRouter:
-    """Router-layer: UTC-19 — 401, 404."""
+    """Router-layer: UTC-21 — 401, 404."""
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-19 (auth): No bearer token → 401."""
+        """UTC-21 (auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={"joint_sound": "popping"})
@@ -327,20 +333,29 @@ class TestUpdateExtraoralExamRouter:
         finally:
             app.dependency_overrides.clear()
 
-    def test_not_found_returns_404(self, mock_session):
-        """UTC-19-TC-02 (HTTP): Non-existent chart → 404."""
+    def test_creates_new_record_when_none_exists_returns_200(self, mock_session):
+        """UTC-21-TC-02 (HTTP): No existing exam → upsert creates new record → 200."""
+        from app.models.enums import JointSoundType
+
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
+
+        new_exam = make_exam(exam_id=EXAM_ID, chart_id=CHART_ID)
+        new_exam.joint_sound = JointSoundType.clicking
+        mock_session.refresh.side_effect = lambda obj: obj.__dict__.update(new_exam.__dict__)
 
         client, app = _authed_client(mock_session)
         try:
-            url = f"/dental-charts/{NONEXISTENT}/extraoral-exams"
-            response = client.put(url, json={"joint_sound": "popping"})
-            assert response.status_code == 404
+            response = client.put(BASE_URL, json={
+                "facial_symmetry": "symmetry",
+                "facial_profile": "straight",
+                "joint_sound": "clicking",
+            })
+            assert response.status_code == 200
         finally:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-19-TC-01 (HTTP): Valid update → 200 with updated fields."""
+        """UTC-21-TC-01 (HTTP): Valid update → 200 with updated fields."""
         from app.models.enums import JointSoundType, JawDeviationType
 
         exam = make_exam(exam_id=EXAM_ID, chart_id=CHART_ID)

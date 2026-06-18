@@ -3,8 +3,10 @@ from __future__ import annotations
 import uuid
 from datetime import datetime, timezone
 
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
+from app.models.dental_chart import DentalChart
 from app.models.residual_ridge_assessment import (
     ResidualRidgeAssessment,
     ResidualRidgeAssessmentCreate,
@@ -17,6 +19,8 @@ def create_residual_ridge_assessment(
     chart_id: uuid.UUID,
     payload: ResidualRidgeAssessmentCreate,
 ) -> ResidualRidgeAssessment:
+    if session.get(DentalChart, chart_id) is None:
+        raise HTTPException(status_code=404, detail="Chart not found")
     item = ResidualRidgeAssessment.model_validate({**payload.model_dump(), "chart_id": chart_id})
     session.add(item)
     session.commit()
@@ -30,14 +34,12 @@ def get_residual_ridge_assessment_by_id(session: Session, assessment_id: uuid.UU
 
 def get_residual_ridge_assessment_by_chart_id(
     session: Session, chart_id: uuid.UUID
-) -> ResidualRidgeAssessment | None:
-    """Return the chart's assessment, or None if it doesn't exist yet.
-
-    A missing record is a normal state for a fresh chart, so callers (GET endpoint)
-    can treat None as "empty" instead of an error.
-    """
+) -> ResidualRidgeAssessment:
     statement = select(ResidualRidgeAssessment).where(ResidualRidgeAssessment.chart_id == chart_id)
-    return session.exec(statement).first()
+    item = session.exec(statement).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Residual ridge assessment not found")
+    return item
 
 
 def get_all_residual_ridge_assessments(
@@ -62,14 +64,12 @@ def update_residual_ridge_assessment(
     item = session.exec(
         select(ResidualRidgeAssessment).where(ResidualRidgeAssessment.chart_id == chart_id)
     ).first()
-    updates = payload.model_dump(exclude_unset=True)
-
     if item is None:
-        item = ResidualRidgeAssessment.model_validate({**updates, "chart_id": chart_id})
-    else:
-        for key, value in updates.items():
-            setattr(item, key, value)
-        item.updated_at = datetime.now(timezone.utc)
+        raise HTTPException(status_code=404, detail="Residual ridge assessment not found")
+    updates = payload.model_dump(exclude_unset=True)
+    for key, value in updates.items():
+        setattr(item, key, value)
+    item.updated_at = datetime.now(timezone.utc)
 
     session.add(item)
     session.commit()
@@ -79,6 +79,5 @@ def update_residual_ridge_assessment(
 
 def delete_residual_ridge_assessment(session: Session, chart_id: uuid.UUID) -> None:
     item = get_residual_ridge_assessment_by_chart_id(session, chart_id)
-    if item is not None:
-        session.delete(item)
-        session.commit()
+    session.delete(item)
+    session.commit()

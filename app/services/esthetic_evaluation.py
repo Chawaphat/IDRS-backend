@@ -2,8 +2,10 @@ from __future__ import annotations
 
 import uuid
 
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
+from app.models.dental_chart import DentalChart
 from app.models.esthetic_evaluation import (
     EstheticEvaluation,
     EstheticEvaluationCreate,
@@ -16,6 +18,8 @@ def create_esthetic_evaluation(
     chart_id: uuid.UUID,
     payload: EstheticEvaluationCreate,
 ) -> EstheticEvaluation:
+    if session.get(DentalChart, chart_id) is None:
+        raise HTTPException(status_code=404, detail="Chart not found")
     item = EstheticEvaluation.model_validate({**payload.model_dump(), "chart_id": chart_id})
     session.add(item)
     session.commit()

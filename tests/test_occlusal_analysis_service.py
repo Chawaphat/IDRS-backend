@@ -1,16 +1,16 @@
 """
 Tests for app/services/occlusal_analysis.py  +  app/routers/occlusal_analyses.py
+Covers ALL test cases UTC-30 and UTC-32.
 
 Router prefix (from app/main.py):
   PUT/GET/DELETE  →  /dental-charts/{chart_id}/occlusal-analysis
   Auth: require_chart_editor
 
-Service behaviours:
-  - upsert_occlusal_analysis: creates new if absent, updates existing (upsert pattern).
-    ⚠ Spec may expect 404 for missing chart; actual: creates new record.
-  - get_occlusal_analysis_by_chart_id: raises 404 if not found.
-  - get_occlusal_analysis_record: returns dict with contacts grouped by contact_type.
-  - delete_occlusal_analysis: raises 404 if not found, then deletes.
+UTC-30 : Update/Replace Occlusal Analysis (PUT)
+  Method: upsert_occlusal_analysis(session, chart_id, payload)
+
+UTC-32 : View Occlusal Analysis & Contact (GET)
+  Method: get_occlusal_analysis_record(session, chart_id)
 """
 import uuid
 from unittest.mock import MagicMock
@@ -96,10 +96,10 @@ def _unauthed_client(mock_session):
 # ============================================================
 
 class TestUpsertOcclusalAnalysis:
-    """Service-layer tests for upsert_occlusal_analysis."""
+    """Service-layer tests for upsert_occlusal_analysis (UTC-30)."""
 
     def test_tc01_create_when_no_existing_record(self, mock_session):
-        """TC-01: No existing record → creates and returns new OcclusalAnalysis."""
+        """UTC-30-TC-01: No existing record → creates and returns new OcclusalAnalysis."""
         from app.models.occlusal_analysis import OcclusalAnalysisCreate
         from app.services.occlusal_analysis import upsert_occlusal_analysis
 
@@ -116,7 +116,7 @@ class TestUpsertOcclusalAnalysis:
         assert result.overlap_vertical == 3.0
 
     def test_tc01_update_when_existing_record(self, mock_session):
-        """TC-01 (upsert): Existing record → updates fields in-place."""
+        """UTC-30-TC-01 (upsert): Existing record → updates fields in-place."""
         from app.models.occlusal_analysis import OcclusalAnalysisCreate
         from app.services.occlusal_analysis import upsert_occlusal_analysis
 
@@ -133,7 +133,7 @@ class TestUpsertOcclusalAnalysis:
 
     def test_tc02_nonexistent_chart_service_does_not_validate_fk(self, mock_session):
         """
-        TC-02: chart_id does not exist.
+        UTC-30-TC-02: chart_id does not exist.
         ⚠ Spec may expect 404 "Chart not found".
         ⚠ Actual: service does NOT validate chart FK — upserts without checking.
            DB would raise IntegrityError on commit in production (no chart row).
@@ -150,7 +150,7 @@ class TestUpsertOcclusalAnalysis:
         assert result.chart_id == NONEXISTENT
 
     def test_tc03_invalid_enum_raises_validation_error(self):
-        """TC-03 (schema): Invalid MolarType enum value → Pydantic ValidationError."""
+        """UTC-30-TC-03 (schema): Invalid MolarType enum value → Pydantic ValidationError."""
         from app.models.occlusal_analysis import OcclusalAnalysisCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -173,7 +173,7 @@ class TestUpsertOcclusalAnalysisRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_enum_via_http_returns_422(self, mock_session):
-        """TC-03 (HTTP): Invalid right_molar enum via router → 422."""
+        """UTC-30-TC-03 (HTTP): Invalid right_molar enum via router → 422."""
         client, app = _authed_client(mock_session)
         try:
             bad_payload = {**VALID_PAYLOAD, "right_molar": "not_a_class"}
@@ -185,7 +185,7 @@ class TestUpsertOcclusalAnalysisRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_201(self, mock_session):
-        """TC-01 (HTTP): Valid payload → 201 with occlusal record."""
+        """UTC-30-TC-01 (HTTP): Valid payload → 201 with occlusal record."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
         mock_session.refresh.side_effect = lambda obj: setattr(obj, "occlusal_id", OCCLUSAL_ID)
 
@@ -206,10 +206,10 @@ class TestUpsertOcclusalAnalysisRouter:
 # ============================================================
 
 class TestGetOcclusalAnalysis:
-    """Service-layer tests for get_occlusal_analysis_by_chart_id."""
+    """Service-layer tests for get_occlusal_analysis_by_chart_id (UTC-32)."""
 
     def test_tc01_success_returns_analysis(self, mock_session):
-        """TC-01: Existing record → returned."""
+        """UTC-32-TC-01: Existing record → returned."""
         from app.services.occlusal_analysis import get_occlusal_analysis_by_chart_id
 
         occlusal = make_occlusal()
@@ -221,7 +221,7 @@ class TestGetOcclusalAnalysis:
         assert result.right_molar == "class_i"
 
     def test_tc02_not_found_raises_404(self, mock_session):
-        """TC-02: No record for chart_id → 404 'Occlusal analysis not found'."""
+        """UTC-32-TC-02: No record for chart_id → 404 'Occlusal analysis not found'."""
         from app.services.occlusal_analysis import get_occlusal_analysis_by_chart_id
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
@@ -246,7 +246,7 @@ class TestGetOcclusalAnalysisRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_not_found_returns_404(self, mock_session):
-        """TC-02 (HTTP): No record → 404."""
+        """UTC-32-TC-02 (HTTP): No record → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -257,7 +257,7 @@ class TestGetOcclusalAnalysisRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """TC-01 (HTTP): Existing record → 200 with dict including contacts."""
+        """UTC-32-TC-01 (HTTP): Existing record → 200 with dict including contacts."""
         from app.models.enums import MolarType
 
         occlusal = make_occlusal()

@@ -1,16 +1,16 @@
 """
 Tests for app/services/occlusal_contact.py  +  app/routers/occlusal_contact.py
+Covers ALL test cases UTC-31.
 
 Router prefix (from app/main.py):
   PUT    →  /dental-charts/{chart_id}/occlusal-contacts
   DELETE →  /dental-charts/{chart_id}/occlusal-contacts/{contact_id}
   Auth: require_chart_editor
 
-Service behaviours:
-  - create_and_replace_occlusal_contacts:
-      • If no OcclusalAnalysis exists for chart_id → auto-creates one.
-      • Deletes ALL existing contacts for that occlusal record, then inserts new ones.
-  - delete_occlusal_contact: deletes single contact by contact_id (no 404 guard in service).
+UTC-31 : Update/Replace Occlusal Contact (PUT)
+  Method: create_and_replace_occlusal_contacts(session, chart_id, payload)
+  Behaviour: If no OcclusalAnalysis exists → auto-creates one.
+             Deletes ALL existing contacts, then inserts new ones.
 """
 import uuid
 from unittest.mock import MagicMock, call
@@ -109,7 +109,7 @@ class TestCreateAndReplaceOcclusalContacts:
     """Service-layer tests for create_and_replace_occlusal_contacts."""
 
     def test_tc01_replaces_contacts_when_occlusal_exists(self, mock_session):
-        """TC-01: Existing OcclusalAnalysis → old contacts deleted, new ones inserted."""
+        """UTC-31-TC-01: Existing OcclusalAnalysis → old contacts deleted, new ones inserted."""
         from app.models.occlusal_contact import OcclusalContactBulkCreate, OcclusalContactCreate
         from app.models.enums import ContactType
         from app.services.occlusal_contact import create_and_replace_occlusal_contacts
@@ -135,8 +135,25 @@ class TestCreateAndReplaceOcclusalContacts:
         mock_session.commit.assert_called_once()
         assert len(result) == 2
 
+    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
+        """UTC-31-TC-02: chart_id does not exist → 404 'Chart not found'."""
+        from app.models.occlusal_contact import OcclusalContactBulkCreate, OcclusalContactCreate
+        from app.models.enums import ContactType
+        from app.services.occlusal_contact import create_and_replace_occlusal_contacts
+
+        payload = OcclusalContactBulkCreate(contacts=[
+            OcclusalContactCreate(contact_type=ContactType.working, upper_tooth=16, lower_tooth=46),
+        ])
+        mock_session.get.return_value = None
+
+        with pytest.raises(HTTPException) as exc:
+            create_and_replace_occlusal_contacts(mock_session, NONEXISTENT, payload)
+
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
+
     def test_tc01_auto_creates_occlusal_when_missing(self, mock_session):
-        """TC-01 (no occlusal): Missing OcclusalAnalysis → auto-created, then contacts inserted."""
+        """UTC-31-TC-01 (no occlusal): Missing OcclusalAnalysis → auto-created, then contacts inserted."""
         from app.models.occlusal_contact import OcclusalContactBulkCreate, OcclusalContactCreate
         from app.models.enums import ContactType
         from app.services.occlusal_contact import create_and_replace_occlusal_contacts
@@ -165,7 +182,7 @@ class TestCreateAndReplaceOcclusalContacts:
         assert len(result) == 1
 
     def test_tc03_invalid_contact_type_raises_validation_error(self):
-        """TC-03 (schema): Invalid ContactType enum → Pydantic ValidationError."""
+        """UTC-31-TC-03 (schema): Invalid ContactType enum → Pydantic ValidationError."""
         from app.models.occlusal_contact import OcclusalContactCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -175,7 +192,7 @@ class TestCreateAndReplaceOcclusalContacts:
         assert "contact_type" in error_fields
 
     def test_tc03_missing_required_fields_raises_validation_error(self):
-        """TC-03 (schema): Missing upper_tooth / lower_tooth → Pydantic ValidationError."""
+        """UTC-31-TC-03 (schema): Missing upper_tooth / lower_tooth → Pydantic ValidationError."""
         from app.models.occlusal_contact import OcclusalContactCreate
         from app.models.enums import ContactType
 
@@ -200,7 +217,7 @@ class TestCreateAndReplaceOcclusalContactsRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_contact_type_via_http_returns_422(self, mock_session):
-        """TC-03 (HTTP): Invalid contact_type → 422."""
+        """UTC-31-TC-03 (HTTP): Invalid contact_type → 422."""
         client, app = _authed_client(mock_session)
         try:
             bad_payload = {"contacts": [{"contact_type": "INVALID_TYPE", "upper_tooth": 16, "lower_tooth": 46}]}
@@ -210,7 +227,7 @@ class TestCreateAndReplaceOcclusalContactsRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_missing_teeth_via_http_returns_422(self, mock_session):
-        """TC-03 (HTTP): Missing upper_tooth / lower_tooth → 422."""
+        """UTC-31-TC-03 (HTTP): Missing upper_tooth / lower_tooth → 422."""
         client, app = _authed_client(mock_session)
         try:
             bad_payload = {"contacts": [{"contact_type": "working_contact"}]}
@@ -220,7 +237,7 @@ class TestCreateAndReplaceOcclusalContactsRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """TC-01 (HTTP): Valid bulk contacts → 200 with list of contacts."""
+        """UTC-31-TC-01 (HTTP): Valid bulk contacts → 200 with list of contacts."""
         from app.models.enums import ContactType
 
         contact1 = make_contact(contact_id=uuid.uuid4(), contact_type="working")

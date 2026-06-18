@@ -1,6 +1,6 @@
 """
 Tests for app/services/medical_histories.py  +  app/routers/medical_histories.py
-Covers ALL test cases UTC-14, UTC-15, UTC-16.
+Covers ALL test cases UTC-16, UTC-17, UTC-18.
 
 Layer split:
   - Service tests  → mock session, direct function calls
@@ -84,14 +84,14 @@ def _unauthed_client(mock_session):
 
 
 # ============================================================
-# UTC-14 : create_medical_history
+# UTC-16 : create_medical_history
 # ============================================================
 
 class TestCreateMedicalHistory:
     """Service-layer tests for create_medical_history."""
 
     def test_tc01_success_creates_and_returns_history(self, mock_session):
-        """UTC-14-TC-01: Valid payload + existing chart → MedicalHistory created."""
+        """UTC-16-TC-01: Valid payload + existing chart → MedicalHistory created."""
         from app.models.medical_histories import MedicalHistoryCreate
         from app.services.medical_histories import create_medical_history
 
@@ -135,14 +135,8 @@ class TestCreateMedicalHistory:
         assert result.chart_id == CHART_ID
         assert result.history_id == HISTORY_ID
 
-    def test_tc02_nonexistent_chart_no_patient_sync(self, mock_session):
-        """
-        UTC-14-TC-02: chart_id does not exist.
-        ⚠ Spec expects: 404 "Chart not found".
-        ⚠ Actual: service does NOT validate chart FK — it creates the record and skips
-           allergy-sync (session.get returns None). DB would raise IntegrityError on commit.
-        Test documents actual implementation behaviour.
-        """
+    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
+        """UTC-16-TC-02: chart_id does not exist → 404 'Chart not found'."""
         from app.models.medical_histories import MedicalHistoryCreate
         from app.services.medical_histories import create_medical_history
 
@@ -159,15 +153,16 @@ class TestCreateMedicalHistory:
             patient_expected_outcome=None,
         )
 
-        mock_session.get.return_value = None  # chart not found → no allergy sync
-        mock_session.refresh.side_effect = lambda obj: setattr(obj, "history_id", HISTORY_ID)
+        mock_session.get.return_value = None
 
-        # Service does NOT raise — DB would raise on commit in real scenario
-        result = create_medical_history(mock_session, NONEXISTENT, payload)
-        assert result is not None
+        with pytest.raises(HTTPException) as exc:
+            create_medical_history(mock_session, NONEXISTENT, payload)
+
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
 
     def test_tc03_missing_required_allergy_status_raises_validation_error(self):
-        """UTC-14-TC-03: allergy_status is required → Pydantic ValidationError (422)."""
+        """UTC-16-TC-03: allergy_status is required → Pydantic ValidationError (422)."""
         from app.models.medical_histories import MedicalHistoryCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -224,10 +219,10 @@ class TestCreateMedicalHistory:
 
 
 class TestCreateMedicalHistoryRouter:
-    """Router-layer: UTC-14-TC-04 — no auth → 401."""
+    """Router-layer: UTC-16-TC-04 — no auth → 401."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-14-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-16-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.post(BASE_URL, json={
@@ -242,7 +237,7 @@ class TestCreateMedicalHistoryRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_missing_allergy_status_via_http_returns_422(self, mock_session):
-        """UTC-14-TC-03 (HTTP): Missing allergy_status → 422."""
+        """UTC-16-TC-03 (HTTP): Missing allergy_status → 422."""
         client, app = _authed_client(mock_session)
         try:
             response = client.post(BASE_URL, json={
@@ -258,14 +253,14 @@ class TestCreateMedicalHistoryRouter:
 
 
 # ============================================================
-# UTC-15 : get_medical_history_by_chart_id
+# UTC-17 : get_medical_history_by_chart_id
 # ============================================================
 
 class TestGetMedicalHistory:
     """Service-layer tests for get_medical_history_by_chart_id."""
 
     def test_tc01_success_returns_history(self, mock_session):
-        """UTC-15-TC-01: Existing chart with history → MedicalHistory returned."""
+        """UTC-17-TC-01: Existing chart with history → MedicalHistory returned."""
         from app.services.medical_histories import get_medical_history_by_chart_id
 
         history = make_history(chart_id=CHART_ID)
@@ -278,7 +273,7 @@ class TestGetMedicalHistory:
         assert result.chief_complaint == "Tooth pain on upper right molar"
 
     def test_tc02_nonexistent_chart_raises_404(self, mock_session):
-        """UTC-15-TC-02: chart_id not found → 404 'Medical history not found'."""
+        """UTC-17-TC-02: chart_id not found → 404 'Medical history not found'."""
         from app.services.medical_histories import get_medical_history_by_chart_id
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
@@ -290,7 +285,7 @@ class TestGetMedicalHistory:
         assert "Medical history not found" in exc.value.detail
 
     def test_tc03_missing_chart_id_raises_validation_error(self):
-        """UTC-15-TC-03: chart_id empty string → ValueError (UUID conversion fails)."""
+        """UTC-17-TC-03: chart_id empty string → ValueError (UUID conversion fails)."""
         with pytest.raises(ValueError):
             uuid.UUID("")
 
@@ -299,7 +294,7 @@ class TestGetMedicalHistoryRouter:
     """Router-layer: no auth → 401, not found → 404."""
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-15 (auth): No bearer token → 401."""
+        """UTC-17 (auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.get(BASE_URL)
@@ -308,7 +303,7 @@ class TestGetMedicalHistoryRouter:
             app.dependency_overrides.clear()
 
     def test_not_found_returns_404(self, mock_session):
-        """UTC-15-TC-02 (HTTP): chart has no history → 404."""
+        """UTC-17-TC-02 (HTTP): chart has no history → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -319,7 +314,7 @@ class TestGetMedicalHistoryRouter:
             app.dependency_overrides.clear()
 
     def test_success_returns_200(self, mock_session):
-        """UTC-15-TC-01 (HTTP): Existing history → 200 with data."""
+        """UTC-17-TC-01 (HTTP): Existing history → 200 with data."""
         history = make_history(chart_id=CHART_ID)
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=history))
 
@@ -335,14 +330,14 @@ class TestGetMedicalHistoryRouter:
 
 
 # ============================================================
-# UTC-16 : update_medical_history
+# UTC-18 : update_medical_history
 # ============================================================
 
 class TestUpdateMedicalHistory:
     """Service-layer tests for update_medical_history."""
 
     def test_tc01_success_updates_and_returns_history(self, mock_session):
-        """UTC-16-TC-01: Valid update payload → updated MedicalHistory returned."""
+        """UTC-18-TC-01: Valid update payload → updated MedicalHistory returned."""
         from app.models.medical_histories import MedicalHistoryUpdate
         from app.services.medical_histories import update_medical_history
 
@@ -379,7 +374,7 @@ class TestUpdateMedicalHistory:
         assert result.present_illness == "Pain started 3000 days ago, worse when chewing"
 
     def test_tc02_nonexistent_chart_raises_404(self, mock_session):
-        """UTC-16-TC-02: chart_id not found → 404 'Medical history not found'."""
+        """UTC-18-TC-02: chart_id not found → 404 'Medical history not found'."""
         from app.models.medical_histories import MedicalHistoryUpdate
         from app.services.medical_histories import update_medical_history
 
@@ -397,10 +392,10 @@ class TestUpdateMedicalHistory:
 
 
 class TestUpdateMedicalHistoryRouter:
-    """Router-layer: UTC-16 — no auth → 401, not found → 404."""
+    """Router-layer: UTC-18 — no auth → 401, not found → 404."""
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-16 (auth): No bearer token → 401."""
+        """UTC-18 (auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={"chief_complaint": "x"})
@@ -409,7 +404,7 @@ class TestUpdateMedicalHistoryRouter:
             app.dependency_overrides.clear()
 
     def test_not_found_returns_404(self, mock_session):
-        """UTC-16-TC-02 (HTTP): Non-existent chart → 404."""
+        """UTC-18-TC-02 (HTTP): Non-existent chart → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)

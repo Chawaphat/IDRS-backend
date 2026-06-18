@@ -1,22 +1,22 @@
 """
 Tests for app/services/dental_status.py  +  app/routers/dental_status.py
-Covers ALL test cases UTC-26 and UTC-27.
+Covers ALL test cases UTC-28 and UTC-29.
 
 Router prefix (from app/main.py):
   PUT/GET/DELETE  →  /dental-charts/{chart_id}/dental-status
 
-UTC-26 : Update/Replace Dental Status (PUT)
+UTC-28 : Update/Replace Dental Status (PUT)
   Method: create_or_replace_dental_status(session, chart_id, payload)
   Behaviour: UPSERT — creates or fully replaces the existing record.
 
-UTC-27 : View Dental Status (GET)
+UTC-29 : View Dental Status (GET)
   Method: get_dental_status_by_chart_id(session, chart_id)
 
 Behavioural discrepancies (spec vs implementation):
-  - UTC-26-TC-02: spec → 404 "Chart not found".
+  - UTC-28-TC-02: spec → 404 "Chart not found".
     Implementation does NOT validate FK — DB rejects on commit in production.
     Service-layer test verifies no immediate raise; HTTP test documents 200 (upsert succeeds).
-  - UTC-27-TC-02: spec → 404 "Chart not found".
+  - UTC-29-TC-02: spec → 404 "Chart not found".
     Service returns None; router response_model=DentalStatusResponse (not Optional)
     → FastAPI serialisation error → 500.  ⚠ Implementation bug.
   - _build_response makes many session.exec calls; tests use teeth=[] to keep mocking simple.
@@ -138,13 +138,13 @@ def _make_exec_side_effect(*results):
 
 
 # ============================================================
-# UTC-26 : create_or_replace_dental_status (service layer)
+# UTC-28 : create_or_replace_dental_status (service layer)
 # ============================================================
 
 class TestCreateOrReplaceDentalStatus:
 
     def test_tc01_success_creates_new_status_empty_teeth(self, mock_session):
-        """UTC-26-TC-01: No existing status, empty teeth list → creates and returns response."""
+        """UTC-28-TC-01: No existing status, empty teeth list → creates and returns response."""
         from app.schemas.dental_status import DentalStatusBulkCreate
         from app.services.dental_status import create_or_replace_dental_status
 
@@ -166,7 +166,7 @@ class TestCreateOrReplaceDentalStatus:
         assert result.teeth == []
 
     def test_tc01_success_replaces_existing_status(self, mock_session):
-        """UTC-26-TC-01 (upsert): Existing status → old teeth deleted, new teeth inserted."""
+        """UTC-28-TC-01 (upsert): Existing status → old teeth deleted, new teeth inserted."""
         from app.schemas.dental_status import DentalStatusBulkCreate
         from app.services.dental_status import create_or_replace_dental_status
 
@@ -188,7 +188,7 @@ class TestCreateOrReplaceDentalStatus:
 
     def test_tc02_nonexistent_chart_service_does_not_validate_fk(self, mock_session):
         """
-        UTC-26-TC-02: chart_id does not exist in DB.
+        UTC-28-TC-02: chart_id does not exist in DB.
         ⚠ Spec expects: 404 "Chart not found".
         ⚠ Actual: service does NOT validate chart FK — creates record without checking.
            DB would raise IntegrityError on commit in production.
@@ -206,7 +206,7 @@ class TestCreateOrReplaceDentalStatus:
         assert result.chart_id == NONEXISTENT
 
     def test_tc03_invalid_tooth_type_raises_validation_error(self):
-        """UTC-26-TC-03: Invalid tooth_type enum → Pydantic ValidationError (422)."""
+        """UTC-28-TC-03: Invalid tooth_type enum → Pydantic ValidationError (422)."""
         from app.schemas.dental_status import DentalStatusBulkCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -216,7 +216,7 @@ class TestCreateOrReplaceDentalStatus:
         assert any("tooth_type" in loc for loc in error_locs)
 
     def test_tc03_missing_teeth_key_raises_validation_error(self):
-        """UTC-26-TC-03 (schema): Missing 'teeth' field in payload → Pydantic ValidationError."""
+        """UTC-28-TC-03 (schema): Missing 'teeth' field in payload → Pydantic ValidationError."""
         from app.schemas.dental_status import DentalStatusBulkCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -227,13 +227,13 @@ class TestCreateOrReplaceDentalStatus:
 
 
 # ============================================================
-# UTC-26 : create_or_replace_dental_status (router layer)
+# UTC-28 : create_or_replace_dental_status (router layer)
 # ============================================================
 
 class TestCreateOrReplaceDentalStatusRouter:
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-26-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-28-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.put(BASE_URL, json=VALID_PAYLOAD_EMPTY)
@@ -242,7 +242,7 @@ class TestCreateOrReplaceDentalStatusRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_tooth_type_via_http_returns_422(self, mock_session):
-        """UTC-26-TC-03 (HTTP): Invalid tooth_type → 422 Unprocessable Entity."""
+        """UTC-28-TC-03 (HTTP): Invalid tooth_type → 422 Unprocessable Entity."""
         client, app = _authed_client(mock_session)
         try:
             response = client.put(BASE_URL, json=INVALID_PAYLOAD)
@@ -253,7 +253,7 @@ class TestCreateOrReplaceDentalStatusRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_missing_teeth_key_via_http_returns_422(self, mock_session):
-        """UTC-26-TC-03 (HTTP): Missing 'teeth' key in body → router returns 422."""
+        """UTC-28-TC-03 (HTTP): Missing 'teeth' key in body → router returns 422."""
         client, app = _authed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={})   # 'teeth' field absent
@@ -264,7 +264,7 @@ class TestCreateOrReplaceDentalStatusRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_empty_teeth_returns_200(self, mock_session):
-        """UTC-26-TC-01 (HTTP): Empty teeth list → 200 with status_id and chart_id."""
+        """UTC-28-TC-01 (HTTP): Empty teeth list → 200 with status_id and chart_id."""
         status = make_status(status_id=STATUS_ID, chart_id=CHART_ID)
 
         mock_session.exec.side_effect = _make_exec_side_effect(None, [], [])
@@ -285,13 +285,13 @@ class TestCreateOrReplaceDentalStatusRouter:
 
 
 # ============================================================
-# UTC-27 : get_dental_status_by_chart_id  (View Dental Status)
+# UTC-29 : get_dental_status_by_chart_id  (View Dental Status)
 # ============================================================
 
 class TestGetDentalStatus:
 
     def test_tc01_success_returns_status_with_teeth(self, mock_session):
-        """UTC-26-TC-01 (GET): Existing dental status → DentalStatusResponse returned."""
+        """UTC-28-TC-01 (GET): Existing dental status → DentalStatusResponse returned."""
         from app.services.dental_status import get_dental_status_by_chart_id
 
         status = make_status(status_id=STATUS_ID, chart_id=CHART_ID)
@@ -305,29 +305,29 @@ class TestGetDentalStatus:
         assert result.chart_id == CHART_ID
         assert result.teeth == []
 
-    def test_tc02_not_found_returns_none(self, mock_session):
-        """
-        UTC-26-TC-02: chart_id has no dental status → returns None.
-        ⚠ Service returns None (not 404); router returns 200 with null body.
-        """
+    def test_tc02_not_found_raises_404(self, mock_session):
+        """UTC-28-TC-02: chart_id has no dental status → 404 'Chart not found'."""
         from app.services.dental_status import get_dental_status_by_chart_id
+        from fastapi import HTTPException
 
         mock_session.exec.side_effect = _make_exec_side_effect(None)
 
-        result = get_dental_status_by_chart_id(mock_session, NONEXISTENT)
-        assert result is None
+        with pytest.raises(HTTPException) as exc:
+            get_dental_status_by_chart_id(mock_session, NONEXISTENT)
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
 
     def test_tc03_empty_chart_id_raises_value_error(self):
-        """UTC-26-TC-03: Empty chart_id string → ValueError before service is called."""
+        """UTC-28-TC-03: Empty chart_id string → ValueError before service is called."""
         with pytest.raises(ValueError):
             uuid.UUID("")
 
 
 class TestGetDentalStatusRouter:
-    """Router-layer: UTC-27-TC-01 to TC-04."""
+    """Router-layer: UTC-29-TC-01 to TC-04."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-27-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-29-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.get(BASE_URL)
@@ -335,26 +335,20 @@ class TestGetDentalStatusRouter:
         finally:
             app.dependency_overrides.clear()
 
-    def test_tc02_not_found_returns_500(self, mock_session):
-        """
-        UTC-27-TC-02: No dental status for chart.
-        ⚠ Spec expects: 404 "Chart not found".
-        ⚠ Actual: service returns None; router response_model=DentalStatusResponse (not Optional)
-           → FastAPI serialisation fails → 500 Internal Server Error.
-           This is an implementation bug — the router should declare response_model as optional.
-        """
+    def test_tc02_not_found_returns_404(self, mock_session):
+        """UTC-29-TC-02: No dental status for chart → 404 'Chart not found'."""
         mock_session.exec.side_effect = _make_exec_side_effect(None)
 
         client, app = _authed_client(mock_session)
         try:
             response = client.get(BASE_URL)
-            assert response.status_code == 500
+            assert response.status_code == 404
         finally:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_chart_id_returns_422(self, mock_session):
         """
-        UTC-27-TC-03: chart_id is empty/invalid UUID in path.
+        UTC-29-TC-03: chart_id is empty/invalid UUID in path.
         FastAPI path-parameter validation rejects non-UUID → 422 Unprocessable Entity.
         """
         client, app = _authed_client(mock_session)
@@ -366,7 +360,7 @@ class TestGetDentalStatusRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-27-TC-01: Existing dental status → 200 with status_id and chart_id."""
+        """UTC-29-TC-01: Existing dental status → 200 with status_id and chart_id."""
         status = make_status(status_id=STATUS_ID, chart_id=CHART_ID)
         mock_session.exec.side_effect = _make_exec_side_effect(status, [])
 
@@ -383,13 +377,13 @@ class TestGetDentalStatusRouter:
 
 
 # ============================================================
-# UTC-26 : delete_dental_status
+# UTC-28 : delete_dental_status
 # ============================================================
 
 class TestDeleteDentalStatus:
 
     def test_tc01_success_deletes_existing_status(self, mock_session):
-        """UTC-26 (DELETE): Existing status_id → deleted, no error."""
+        """UTC-28 (DELETE): Existing status_id → deleted, no error."""
         from app.services.dental_status import delete_dental_status
 
         status = make_status(status_id=STATUS_ID, chart_id=CHART_ID)
@@ -401,7 +395,7 @@ class TestDeleteDentalStatus:
         mock_session.commit.assert_called_once()
 
     def test_tc02_nonexistent_status_no_error(self, mock_session):
-        """UTC-26 (DELETE): Non-existent status_id → silently does nothing."""
+        """UTC-28 (DELETE): Non-existent status_id → silently does nothing."""
         from app.services.dental_status import delete_dental_status
 
         mock_session.get.return_value = None
@@ -415,7 +409,7 @@ class TestDeleteDentalStatus:
 class TestDeleteDentalStatusRouter:
 
     def test_no_auth_returns_401(self, mock_session):
-        """UTC-26 (DELETE, auth): No bearer token → 401."""
+        """UTC-28 (DELETE, auth): No bearer token → 401."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.delete(f"{BASE_URL}?status_id={STATUS_ID}")
@@ -424,7 +418,7 @@ class TestDeleteDentalStatusRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_204(self, mock_session):
-        """UTC-26 (DELETE, HTTP): Existing status → 204 No Content."""
+        """UTC-28 (DELETE, HTTP): Existing status → 204 No Content."""
         status = make_status(status_id=STATUS_ID, chart_id=CHART_ID)
         mock_session.get.return_value = status
 
@@ -436,7 +430,7 @@ class TestDeleteDentalStatusRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_nonexistent_returns_204(self, mock_session):
-        """UTC-26 (DELETE, HTTP): Non-existent status_id → 204 (service is silent)."""
+        """UTC-28 (DELETE, HTTP): Non-existent status_id → 204 (service is silent)."""
         mock_session.get.return_value = None
 
         client, app = _authed_client(mock_session)

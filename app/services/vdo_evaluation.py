@@ -4,10 +4,15 @@ import uuid
 
 from sqlmodel import Session, select
 
+from fastapi import HTTPException
+
+from app.models.dental_chart import DentalChart
 from app.models.vdo_evaluation import VdoEvaluation, VdoEvaluationCreate, VdoEvaluationUpdate
 
 
 def create_vdo_evaluation(session: Session, chart_id: uuid.UUID, payload: VdoEvaluationCreate) -> VdoEvaluation:
+    if session.get(DentalChart, chart_id) is None:
+        raise HTTPException(status_code=404, detail="Chart not found")
     item = VdoEvaluation.model_validate({**payload.model_dump(), "chart_id": chart_id})
     session.add(item)
     session.commit()
@@ -19,14 +24,12 @@ def get_vdo_evaluation_by_id(session: Session, vdo_id: uuid.UUID) -> VdoEvaluati
     return session.get(VdoEvaluation, vdo_id)
 
 
-def get_vdo_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> VdoEvaluation | None:
-    """Return the chart's VDO evaluation, or None if it doesn't exist yet.
-
-    A missing record is normal for a fresh chart, so the GET endpoint can return
-    None (empty) instead of a 404 that the UI would surface as an error.
-    """
+def get_vdo_evaluation_by_chart_id(session: Session, chart_id: uuid.UUID) -> VdoEvaluation:
     statement = select(VdoEvaluation).where(VdoEvaluation.chart_id == chart_id)
-    return session.exec(statement).first()
+    item = session.exec(statement).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="VDO evaluation not found")
+    return item
 
 
 def get_all_vdo_evaluations(session: Session, skip: int = 0, limit: int = 100) -> list[VdoEvaluation]:
@@ -47,13 +50,11 @@ def update_vdo_evaluation(
     item = session.exec(
         select(VdoEvaluation).where(VdoEvaluation.chart_id == chart_id)
     ).first()
-    updates = payload.model_dump(exclude_unset=True)
-
     if item is None:
-        item = VdoEvaluation.model_validate({**updates, "chart_id": chart_id})
-    else:
-        for key, value in updates.items():
-            setattr(item, key, value)
+        raise HTTPException(status_code=404, detail="VDO evaluation not found")
+    updates = payload.model_dump(exclude_unset=True)
+    for key, value in updates.items():
+        setattr(item, key, value)
 
     session.add(item)
     session.commit()

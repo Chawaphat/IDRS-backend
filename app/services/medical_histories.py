@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import uuid
 
+from fastapi import HTTPException
 from sqlmodel import Session, select
 
 from app.models.medical_histories import MedicalHistory, MedicalHistoryCreate, MedicalHistoryUpdate
@@ -10,11 +11,13 @@ from app.models.dental_chart import DentalChart
 from app.models.patient import Patient
 
 def create_medical_history(session: Session, chart_id: uuid.UUID, payload: MedicalHistoryCreate) -> MedicalHistory:
+    chart = session.get(DentalChart, chart_id)
+    if chart is None:
+        raise HTTPException(status_code=404, detail="Chart not found")
     item = MedicalHistory.model_validate({**payload.model_dump(), "chart_id": chart_id})
     session.add(item)
-    
+
     # Sync allergy to patient
-    chart = session.get(DentalChart, chart_id)
     if chart:
         patient = session.get(Patient, chart.patient_id)
         if patient:
@@ -31,10 +34,12 @@ def create_medical_history(session: Session, chart_id: uuid.UUID, payload: Medic
 def get_medical_history_by_id(session: Session, history_id: uuid.UUID) -> MedicalHistory | None:
     return session.get(MedicalHistory, history_id)
 
-def get_medical_history_by_chart_id(session: Session, chart_id: uuid.UUID) -> MedicalHistory | None:
-    """Return the chart's medical history, or None if it doesn't exist yet."""
+def get_medical_history_by_chart_id(session: Session, chart_id: uuid.UUID) -> MedicalHistory:
     statement = select(MedicalHistory).where(MedicalHistory.chart_id == chart_id)
-    return session.exec(statement).first()
+    item = session.exec(statement).first()
+    if item is None:
+        raise HTTPException(status_code=404, detail="Medical history not found")
+    return item
 
 def get_all_medical_histories(session: Session, skip: int = 0, limit: int = 100) -> list[MedicalHistory]:
     statement = select(MedicalHistory).offset(skip).limit(limit)
@@ -49,14 +54,12 @@ def update_medical_history(
     item = session.exec(
         select(MedicalHistory).where(MedicalHistory.chart_id == chart_id)
     ).first()
-    updates = payload.model_dump(exclude_unset=True)
     if not item:
-        item = MedicalHistory.model_validate({**updates, "chart_id": chart_id})
-        session.add(item)
-    else:
-        for key, value in updates.items():
-            setattr(item, key, value)
-        session.add(item)
+        raise HTTPException(status_code=404, detail="Medical history not found")
+    updates = payload.model_dump(exclude_unset=True)
+    for key, value in updates.items():
+        setattr(item, key, value)
+    session.add(item)
 
     # Sync allergy to patient
     chart = session.get(DentalChart, chart_id)

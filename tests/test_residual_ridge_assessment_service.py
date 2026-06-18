@@ -1,7 +1,7 @@
 """
 Tests for app/services/residual_ridge_assessment.py
       + app/routers/residual_ridge_assessments.py
-Covers ALL test cases UTC-31, UTC-32, UTC-33.
+Covers ALL test cases UTC-33, UTC-34, UTC-35.
 
 Layer split:
   - Service tests  → mock session, direct function calls
@@ -12,15 +12,15 @@ Router prefix (from app/main.py):
   Auth dependency      :  require_chart_editor
 
 Behavioural notes (spec vs implementation):
-  - UTC-31-TC-02: spec → 404 "Chart not found".
+  - UTC-33-TC-02: spec → 404 "Chart not found".
     Actual: service does NOT validate chart FK — DB rejects on commit in production.
     Service-layer test documents this divergence.
-  - UTC-31-TC-03: spec → 422 for "missing required fields".
+  - UTC-33-TC-03: spec → 422 for "missing required fields".
     Actual: ResidualRidgeAssessmentCreate has ALL fields optional (default=None).
     The only Pydantic-level 422 path is sending an invalid enum value.
-  - UTC-32-TC-02: spec → 404 "Chart not found".
+  - UTC-34-TC-02: spec → 404 "Chart not found".
     Actual: service raises HTTPException(404) correctly. ✅
-  - UTC-33-TC-02: spec → 404 "Chart not found".
+  - UTC-35-TC-02: spec → 404 "Chart not found".
     Actual: service raises HTTPException(404) via get_residual_ridge_assessment_by_chart_id. ✅
 """
 import uuid
@@ -35,7 +35,7 @@ from fastapi.testclient import TestClient
 from tests.conftest import make_profile
 
 # ---------------------------------------------------------------------------
-# Constants (match UTC-31 through UTC-33 in FullUnitest.md)
+# Constants (match UTC-33 through UTC-35 in FullUnitest.md)
 # ---------------------------------------------------------------------------
 DENTIST_ID     = uuid.UUID("036f8d6a-483d-4c03-9438-a501ec78291a")
 CHART_ID       = uuid.UUID("d8454cab-1a71-46e8-8ac1-69ebae557d5a")
@@ -45,7 +45,7 @@ NONEXISTENT    = uuid.UUID("99999999-9999-9999-9999-999999999999")
 BASE_URL       = f"/dental-charts/{CHART_ID}/residual-ridge-assessment"
 
 # ---------------------------------------------------------------------------
-# Valid payload (matches UTC-31-TC-01 in FullUnitest.md)
+# Valid payload (matches UTC-33-TC-01 in FullUnitest.md)
 # ---------------------------------------------------------------------------
 VALID_PAYLOAD = {
     "ridge_height": "low_flat",
@@ -123,14 +123,14 @@ def _unauthed_client(mock_session):
 
 
 # ============================================================
-# UTC-31 : create_residual_ridge_assessment
+# UTC-33 : create_residual_ridge_assessment
 # ============================================================
 
 class TestCreateResidualRidgeAssessment:
     """Service-layer tests for create_residual_ridge_assessment."""
 
     def test_tc01_success_creates_and_returns_assessment(self, mock_session):
-        """UTC-31-TC-01: Valid payload + existing chart → ResidualRidgeAssessment returned."""
+        """UTC-33-TC-01: Valid payload + existing chart → ResidualRidgeAssessment returned."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentCreate
         from app.services.residual_ridge_assessment import create_residual_ridge_assessment
 
@@ -151,29 +151,23 @@ class TestCreateResidualRidgeAssessment:
         assert result.ridge_width == "narrow"
         assert result.jaw_size == "medium"
 
-    def test_tc02_nonexistent_chart_service_does_not_validate_fk(self, mock_session):
-        """
-        UTC-31-TC-02: chart_id does not exist in DB.
-
-        SPEC vs IMPLEMENTATION DIVERGENCE (known):
-          - Spec expects: HTTP 404 "Chart not found".
-          - Actual: service does NOT validate chart FK — calls session.add/commit
-            and lets the DB enforce the constraint (IntegrityError) in production.
-
-        Test documents actual service-layer behaviour (no immediate raise).
-        """
+    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
+        """UTC-33-TC-02: chart_id does not exist → 404 'Chart not found'."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentCreate
         from app.services.residual_ridge_assessment import create_residual_ridge_assessment
 
         payload = ResidualRidgeAssessmentCreate(**VALID_PAYLOAD)
-        mock_session.refresh.side_effect = lambda obj: setattr(obj, "assessment_id", ASSESSMENT_ID)
+        mock_session.get.return_value = None
 
-        result = create_residual_ridge_assessment(mock_session, NONEXISTENT, payload)
-        assert result.chart_id == NONEXISTENT
+        with pytest.raises(HTTPException) as exc:
+            create_residual_ridge_assessment(mock_session, NONEXISTENT, payload)
+
+        assert exc.value.status_code == 404
+        assert "Chart not found" in exc.value.detail
 
     def test_tc03_all_fields_optional_no_validation_error(self):
         """
-        UTC-31-TC-03: Spec says "missing required fields → HTTP 422".
+        UTC-33-TC-03: Spec says "missing required fields → HTTP 422".
 
         SPEC vs IMPLEMENTATION DIVERGENCE (known):
           - Spec expects: HTTP 422 when required fields are absent.
@@ -189,7 +183,7 @@ class TestCreateResidualRidgeAssessment:
         assert item.ridge_height is None
 
     def test_tc03_invalid_enum_raises_validation_error(self):
-        """UTC-31-TC-03 (schema): Invalid enum value for ridge_height → Pydantic ValidationError."""
+        """UTC-33-TC-03 (schema): Invalid enum value for ridge_height → Pydantic ValidationError."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentCreate
 
         with pytest.raises(pydantic.ValidationError) as exc:
@@ -200,10 +194,10 @@ class TestCreateResidualRidgeAssessment:
 
 
 class TestCreateResidualRidgeAssessmentRouter:
-    """Router-layer: UTC-31-TC-04 (401), UTC-31-TC-03 (422)."""
+    """Router-layer: UTC-33-TC-04 (401), UTC-33-TC-03 (422)."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-31-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-33-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.post(BASE_URL, json=VALID_PAYLOAD)
@@ -212,7 +206,7 @@ class TestCreateResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_enum_via_http_returns_422(self, mock_session):
-        """UTC-31-TC-03 (HTTP): Invalid enum value for ridge_height → router returns 422."""
+        """UTC-33-TC-03 (HTTP): Invalid enum value for ridge_height → router returns 422."""
         client, app = _authed_client(mock_session)
         try:
             bad_payload = {**VALID_PAYLOAD, "ridge_height": "not_a_valid_height"}
@@ -224,7 +218,7 @@ class TestCreateResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_201(self, mock_session):
-        """UTC-31-TC-01 (HTTP): Valid payload → 201 Created with assessment_id."""
+        """UTC-33-TC-01 (HTTP): Valid payload → 201 Created with assessment_id."""
         mock_session.refresh.side_effect = lambda obj: setattr(obj, "assessment_id", ASSESSMENT_ID)
 
         client, app = _authed_client(mock_session)
@@ -240,14 +234,14 @@ class TestCreateResidualRidgeAssessmentRouter:
 
 
 # ============================================================
-# UTC-32 : get_residual_ridge_assessment_by_chart_id
+# UTC-34 : get_residual_ridge_assessment_by_chart_id
 # ============================================================
 
 class TestGetResidualRidgeAssessment:
     """Service-layer tests for get_residual_ridge_assessment_by_chart_id."""
 
     def test_tc01_success_returns_assessment(self, mock_session):
-        """UTC-32-TC-01: Existing chart with assessment → ResidualRidgeAssessment returned."""
+        """UTC-34-TC-01: Existing chart with assessment → ResidualRidgeAssessment returned."""
         from app.services.residual_ridge_assessment import get_residual_ridge_assessment_by_chart_id
 
         assessment = make_assessment(assessment_id=ASSESSMENT_ID, chart_id=CHART_ID)
@@ -261,7 +255,7 @@ class TestGetResidualRidgeAssessment:
         assert result.ridge_width == "narrow"
 
     def test_tc02_not_found_raises_404(self, mock_session):
-        """UTC-32-TC-02: chart_id has no assessment → 404 'Residual ridge assessment not found'."""
+        """UTC-34-TC-02: chart_id has no assessment → 404 'Residual ridge assessment not found'."""
         from app.services.residual_ridge_assessment import get_residual_ridge_assessment_by_chart_id
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
@@ -273,16 +267,16 @@ class TestGetResidualRidgeAssessment:
         assert "Residual ridge assessment not found" in exc.value.detail
 
     def test_tc03_empty_chart_id_raises_value_error(self):
-        """UTC-32-TC-03: chart_id is empty string → ValueError (UUID conversion fails)."""
+        """UTC-34-TC-03: chart_id is empty string → ValueError (UUID conversion fails)."""
         with pytest.raises(ValueError):
             uuid.UUID("")
 
 
 class TestGetResidualRidgeAssessmentRouter:
-    """Router-layer: UTC-32 — 401, 404, 200."""
+    """Router-layer: UTC-34 — 401, 404, 200."""
 
     def test_tc04_no_auth_returns_401(self, mock_session):
-        """UTC-32-TC-04: No bearer token → 401 Unauthorized."""
+        """UTC-34-TC-04: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.get(BASE_URL)
@@ -291,7 +285,7 @@ class TestGetResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_not_found_returns_404(self, mock_session):
-        """UTC-32-TC-02 (HTTP): No assessment for chart → 404."""
+        """UTC-34-TC-02 (HTTP): No assessment for chart → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -302,7 +296,7 @@ class TestGetResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-32-TC-01 (HTTP): Existing assessment → 200 with full object."""
+        """UTC-34-TC-01 (HTTP): Existing assessment → 200 with full object."""
         assessment = make_assessment(assessment_id=ASSESSMENT_ID, chart_id=CHART_ID)
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=assessment))
 
@@ -319,7 +313,7 @@ class TestGetResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc03_invalid_chart_id_returns_422(self, mock_session):
-        """UTC-32-TC-03 (HTTP): Non-UUID chart_id in path → FastAPI path validation → 422."""
+        """UTC-34-TC-03 (HTTP): Non-UUID chart_id in path → FastAPI path validation → 422."""
         client, app = _authed_client(mock_session)
         try:
             response = client.get("/dental-charts/not-a-uuid/residual-ridge-assessment")
@@ -329,14 +323,14 @@ class TestGetResidualRidgeAssessmentRouter:
 
 
 # ============================================================
-# UTC-33 : update_residual_ridge_assessment
+# UTC-35 : update_residual_ridge_assessment
 # ============================================================
 
 class TestUpdateResidualRidgeAssessment:
     """Service-layer tests for update_residual_ridge_assessment."""
 
     def test_tc01_success_updates_and_returns_assessment(self, mock_session):
-        """UTC-33-TC-01: Valid update payload → updated ResidualRidgeAssessment returned."""
+        """UTC-35-TC-01: Valid update payload → updated ResidualRidgeAssessment returned."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentUpdate
         from app.models.enums import RidgeHeightType, RidgeWidthType, JawSizeType
         from app.services.residual_ridge_assessment import update_residual_ridge_assessment
@@ -360,7 +354,7 @@ class TestUpdateResidualRidgeAssessment:
         assert result.jaw_size == JawSizeType.medium
 
     def test_tc01_partial_update_leaves_other_fields_unchanged(self, mock_session):
-        """UTC-33-TC-01: Partial update — only specified fields change, others remain."""
+        """UTC-35-TC-01: Partial update — only specified fields change, others remain."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentUpdate
         from app.models.enums import RidgeHeightType
         from app.services.residual_ridge_assessment import update_residual_ridge_assessment
@@ -378,7 +372,7 @@ class TestUpdateResidualRidgeAssessment:
         assert assessment.ridge_width == original_width  # unchanged
 
     def test_tc02_not_found_raises_404(self, mock_session):
-        """UTC-33-TC-02: chart_id has no assessment → 404 'Residual ridge assessment not found'."""
+        """UTC-35-TC-02: chart_id has no assessment → 404 'Residual ridge assessment not found'."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentUpdate
         from app.services.residual_ridge_assessment import update_residual_ridge_assessment
 
@@ -396,10 +390,10 @@ class TestUpdateResidualRidgeAssessment:
 
 
 class TestUpdateResidualRidgeAssessmentRouter:
-    """Router-layer: UTC-33 — 401, 404, 200."""
+    """Router-layer: UTC-35 — 401, 404, 200."""
 
     def test_tc03_no_auth_returns_401(self, mock_session):
-        """UTC-33-TC-03: No bearer token → 401 Unauthorized."""
+        """UTC-35-TC-03: No bearer token → 401 Unauthorized."""
         client, app = _unauthed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={"ridge_height": "low_flat"})
@@ -408,7 +402,7 @@ class TestUpdateResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc02_not_found_returns_404(self, mock_session):
-        """UTC-33-TC-02 (HTTP): Non-existent chart → 404."""
+        """UTC-35-TC-02 (HTTP): Non-existent chart → 404."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
         client, app = _authed_client(mock_session)
@@ -420,7 +414,7 @@ class TestUpdateResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_success_returns_200(self, mock_session):
-        """UTC-33-TC-01 (HTTP): Valid update → 200 with updated fields."""
+        """UTC-35-TC-01 (HTTP): Valid update → 200 with updated fields."""
         assessment = make_assessment(assessment_id=ASSESSMENT_ID, chart_id=CHART_ID)
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=assessment))
         mock_session.refresh.side_effect = lambda obj: None
@@ -441,7 +435,7 @@ class TestUpdateResidualRidgeAssessmentRouter:
             app.dependency_overrides.clear()
 
     def test_tc01_invalid_enum_via_http_returns_422(self, mock_session):
-        """UTC-33 (HTTP): Invalid enum value for ridge_height → 422."""
+        """UTC-35 (HTTP): Invalid enum value for ridge_height → 422."""
         client, app = _authed_client(mock_session)
         try:
             response = client.put(BASE_URL, json={"ridge_height": "not_a_valid_height"})
