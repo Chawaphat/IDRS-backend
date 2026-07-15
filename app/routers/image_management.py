@@ -24,34 +24,28 @@ def create_image_management_endpoint(
     payload: ImageManagementCreate,
     session: Session = Depends(get_session),
 ) -> ImageManagement:
-    return create_image_management(session, chart_id, payload)
+    try:
+        return create_image_management(session, chart_id, payload)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=str(e))
 
-
-@router.get("", response_model=list[ImageManagement])
-def get_image_management_endpoint(
-    chart_id: uuid.UUID,
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=1, le=1000),
-    session: Session = Depends(get_session),
-) -> list[ImageManagement]:
-    return get_all_image_management(session, chart_id=chart_id, skip=skip, limit=limit)
-
-@router.get("/signed-url", response_model=list[dict])
+@router.get("", response_model=list[dict])
 def get_image_management_signed_endpoint(
     chart_id: uuid.UUID,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
     session: Session = Depends(get_session),
 ) -> list[dict]:
-    return get_all_image_management_signed(session, chart_id=chart_id, skip=skip, limit=limit)
-
-@router.get("/{image_id}", response_model=ImageManagement)
-def get_image_management_by_id_endpoint(
-    image_id: uuid.UUID,
-    session: Session = Depends(get_session),
-) -> ImageManagement:
-    return get_image_management_by_id(session, image_id)
-
+    try:
+        return get_all_image_management_signed(session, chart_id=chart_id, skip=skip, limit=limit)
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        from fastapi import HTTPException
+        raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/{image_id}", response_model=ImageManagement)
 def update_image_management_endpoint(
