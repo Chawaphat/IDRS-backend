@@ -70,15 +70,15 @@ class TestCreatePatientIntegration:
         assert fetched.name == "Carol"
 
     def test_unique_hn_number_constraint(self, db_session, dentist_profile):
-        """Inserting two patients with the same hn_number must raise an error."""
-        from sqlalchemy.exc import IntegrityError
+        """Duplicate hn_number is caught and surfaced as HTTP 409 (SRS-72), not a raw 500."""
         from app.models.patient import PatientCreate
         from app.services.patient import create_patient
 
         create_patient(db_session, PatientCreate(hn_number="HN-DUP", name="First"), DENTIST_ID)
 
-        with pytest.raises(IntegrityError):
+        with pytest.raises(HTTPException) as exc:
             create_patient(db_session, PatientCreate(hn_number="HN-DUP", name="Second"), DENTIST_ID)
+        assert exc.value.status_code == 409
 
 
 # ============================================================

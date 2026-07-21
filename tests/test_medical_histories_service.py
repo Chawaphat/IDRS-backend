@@ -373,22 +373,25 @@ class TestUpdateMedicalHistory:
         mock_session.commit.assert_called_once()
         assert result.present_illness == "Pain started 3000 days ago, worse when chewing"
 
-    def test_tc02_nonexistent_chart_raises_404(self, mock_session):
-        """UTC-18-TC-02: chart_id not found → 404 'Medical history not found'."""
+    def test_tc02_creates_new_record_when_none_exists(self, mock_session):
+        """UTC-18-TC-02: No existing medical history → upsert creates a new record and returns it."""
         from app.models.medical_histories import MedicalHistoryUpdate
         from app.services.medical_histories import update_medical_history
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
+        mock_session.get.return_value = None
 
-        with pytest.raises(HTTPException) as exc:
-            update_medical_history(
-                mock_session,
-                NONEXISTENT,
-                MedicalHistoryUpdate(chief_complaint="x"),
-            )
+        def fake_refresh(obj):
+            obj.history_id = HISTORY_ID
 
-        assert exc.value.status_code == 404
-        assert "Medical history not found" in exc.value.detail
+        mock_session.refresh.side_effect = fake_refresh
+
+        payload = MedicalHistoryUpdate(chief_complaint="x", allergy_status="no")
+        result = update_medical_history(mock_session, CHART_ID, payload)
+
+        mock_session.add.assert_called()
+        mock_session.commit.assert_called_once()
+        assert result.chart_id == CHART_ID
 
 
 class TestUpdateMedicalHistoryRouter:
@@ -403,14 +406,17 @@ class TestUpdateMedicalHistoryRouter:
         finally:
             app.dependency_overrides.clear()
 
-    def test_not_found_returns_404(self, mock_session):
-        """UTC-18-TC-02 (HTTP): Non-existent chart → 404."""
+    def test_creates_new_record_when_none_exists_returns_200(self, mock_session):
+        """UTC-18-TC-02 (HTTP): No existing medical history → upsert creates new record → 200."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
+        mock_session.get.return_value = None
+
+        new_history = make_history(chart_id=CHART_ID)
+        mock_session.refresh.side_effect = lambda obj: obj.__dict__.update(new_history.__dict__)
 
         client, app = _authed_client(mock_session)
         try:
-            url = f"/dental-charts/{NONEXISTENT}/medical-history"
-            response = client.put(url, json={"chief_complaint": "x"})
-            assert response.status_code == 404
+            response = client.put(BASE_URL, json={"chief_complaint": "x", "allergy_status": "no"})
+            assert response.status_code == 200
         finally:
             app.dependency_overrides.clear()

@@ -4,6 +4,7 @@ import uuid
 from datetime import datetime
 
 from fastapi import HTTPException
+from sqlalchemy.exc import IntegrityError
 from sqlmodel import Session, select ,or_
 
 from app.models.dental_chart import DentalChart
@@ -29,7 +30,13 @@ def create_patient(session: Session, payload: PatientCreate, dentist_id: uuid.UU
     patient = Patient.model_validate(payload)
     patient.dentist_id = dentist_id
     session.add(patient)
-    session.commit()
+    try:
+        session.commit()
+    except IntegrityError:
+        # Duplicate hn_number violates the unique constraint — return a
+        # client-friendly error (SRS-72) instead of a raw 500.
+        session.rollback()
+        raise HTTPException(status_code=409, detail="Hospital Number already exists")
     session.refresh(patient)
     return patient
 

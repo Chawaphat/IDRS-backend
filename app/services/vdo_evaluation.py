@@ -51,7 +51,11 @@ def update_vdo_evaluation(
         select(VdoEvaluation).where(VdoEvaluation.chart_id == chart_id)
     ).first()
     if item is None:
-        raise HTTPException(status_code=404, detail="VDO evaluation not found")
+        item = VdoEvaluation.model_validate({**payload.model_dump(), "chart_id": chart_id})
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
     updates = payload.model_dump(exclude_unset=True)
     for key, value in updates.items():
         setattr(item, key, value)

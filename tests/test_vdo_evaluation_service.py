@@ -306,22 +306,25 @@ class TestUpdateVdoEvaluation:
         assert result.bite_type == BiteType.deep_bite
         assert result.reference_teeth == [13, 23]
 
-    def test_tc02_not_found_raises_404(self, mock_session):
-        """UTC-27-TC-02: chart_id has no VDO evaluation → 404."""
+    def test_tc02_creates_new_record_when_none_exists(self, mock_session):
+        """UTC-27-TC-02: No existing VDO evaluation → upsert creates a new record and returns it."""
         from app.models.vdo_evaluation import VdoEvaluationUpdate
         from app.services.vdo_evaluation import update_vdo_evaluation
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
-        with pytest.raises(HTTPException) as exc:
-            update_vdo_evaluation(
-                mock_session,
-                NONEXISTENT,
-                VdoEvaluationUpdate(free_way_space=2.5),
-            )
+        def fake_refresh(obj):
+            obj.vdo_id = VDO_ID
 
-        assert exc.value.status_code == 404
-        assert "VDO evaluation not found" in exc.value.detail
+        mock_session.refresh.side_effect = fake_refresh
+
+        payload = VdoEvaluationUpdate(free_way_space=2.5)
+        result = update_vdo_evaluation(mock_session, CHART_ID, payload)
+
+        mock_session.add.assert_called_once()
+        mock_session.commit.assert_called_once()
+        assert result.chart_id == CHART_ID
+        assert result.free_way_space == 2.5
 
 
 class TestUpdateVdoEvaluationRouter:
@@ -336,15 +339,18 @@ class TestUpdateVdoEvaluationRouter:
         finally:
             app.dependency_overrides.clear()
 
-    def test_tc02_not_found_returns_404(self, mock_session):
-        """UTC-27-TC-02 (HTTP): Non-existent chart → 404."""
+    def test_tc02_creates_new_record_when_none_exists_returns_200(self, mock_session):
+        """UTC-27-TC-02 (HTTP): No existing VDO evaluation → upsert creates new record → 200."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
+
+        new_vdo = make_vdo(vdo_id=VDO_ID, chart_id=CHART_ID)
+        new_vdo.free_way_space = 2.5
+        mock_session.refresh.side_effect = lambda obj: obj.__dict__.update(new_vdo.__dict__)
 
         client, app = _authed_client(mock_session)
         try:
-            url = f"/dental-charts/{NONEXISTENT}/vdo-evaluation"
-            response = client.put(url, json={"free_way_space": 2.5})
-            assert response.status_code == 404
+            response = client.put(BASE_URL, json={"free_way_space": 2.5})
+            assert response.status_code == 200
         finally:
             app.dependency_overrides.clear()
 

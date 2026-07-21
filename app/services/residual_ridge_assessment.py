@@ -65,7 +65,11 @@ def update_residual_ridge_assessment(
         select(ResidualRidgeAssessment).where(ResidualRidgeAssessment.chart_id == chart_id)
     ).first()
     if item is None:
-        raise HTTPException(status_code=404, detail="Residual ridge assessment not found")
+        item = ResidualRidgeAssessment.model_validate({**payload.model_dump(), "chart_id": chart_id})
+        session.add(item)
+        session.commit()
+        session.refresh(item)
+        return item
     updates = payload.model_dump(exclude_unset=True)
     for key, value in updates.items():
         setattr(item, key, value)

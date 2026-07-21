@@ -371,22 +371,24 @@ class TestUpdateResidualRidgeAssessment:
         assert assessment.ridge_height == RidgeHeightType.high
         assert assessment.ridge_width == original_width  # unchanged
 
-    def test_tc02_not_found_raises_404(self, mock_session):
-        """UTC-35-TC-02: chart_id has no assessment → 404 'Residual ridge assessment not found'."""
+    def test_tc02_creates_new_record_when_none_exists(self, mock_session):
+        """UTC-35-TC-02: No existing assessment → upsert creates a new record and returns it."""
         from app.models.residual_ridge_assessment import ResidualRidgeAssessmentUpdate
         from app.services.residual_ridge_assessment import update_residual_ridge_assessment
 
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
 
-        with pytest.raises(HTTPException) as exc:
-            update_residual_ridge_assessment(
-                mock_session,
-                NONEXISTENT,
-                ResidualRidgeAssessmentUpdate(ridge_height="low_flat"),
-            )
+        def fake_refresh(obj):
+            obj.assessment_id = ASSESSMENT_ID
 
-        assert exc.value.status_code == 404
-        assert "Residual ridge assessment not found" in exc.value.detail
+        mock_session.refresh.side_effect = fake_refresh
+
+        payload = ResidualRidgeAssessmentUpdate(ridge_height="low_flat")
+        result = update_residual_ridge_assessment(mock_session, CHART_ID, payload)
+
+        mock_session.add.assert_called_once()
+        mock_session.commit.assert_called_once()
+        assert result.chart_id == CHART_ID
 
 
 class TestUpdateResidualRidgeAssessmentRouter:
@@ -401,15 +403,17 @@ class TestUpdateResidualRidgeAssessmentRouter:
         finally:
             app.dependency_overrides.clear()
 
-    def test_tc02_not_found_returns_404(self, mock_session):
-        """UTC-35-TC-02 (HTTP): Non-existent chart → 404."""
+    def test_tc02_creates_new_record_when_none_exists_returns_200(self, mock_session):
+        """UTC-35-TC-02 (HTTP): No existing assessment → upsert creates new record → 200."""
         mock_session.exec.return_value = MagicMock(first=MagicMock(return_value=None))
+
+        new_assessment = make_assessment(assessment_id=ASSESSMENT_ID, chart_id=CHART_ID)
+        mock_session.refresh.side_effect = lambda obj: obj.__dict__.update(new_assessment.__dict__)
 
         client, app = _authed_client(mock_session)
         try:
-            url = f"/dental-charts/{NONEXISTENT}/residual-ridge-assessment"
-            response = client.put(url, json={"ridge_height": "low_flat"})
-            assert response.status_code == 404
+            response = client.put(BASE_URL, json={"ridge_height": "low_flat"})
+            assert response.status_code == 200
         finally:
             app.dependency_overrides.clear()
 

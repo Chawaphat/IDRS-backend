@@ -55,7 +55,20 @@ def update_medical_history(
         select(MedicalHistory).where(MedicalHistory.chart_id == chart_id)
     ).first()
     if not item:
-        raise HTTPException(status_code=404, detail="Medical history not found")
+        item = MedicalHistory.model_validate({**payload.model_dump(exclude_none=True), "chart_id": chart_id})
+        session.add(item)
+        chart = session.get(DentalChart, chart_id)
+        if chart:
+            patient = session.get(Patient, chart.patient_id)
+            if patient:
+                if item.allergy_status == "yes" and item.allergy_detail:
+                    patient.allergy = item.allergy_detail
+                elif item.allergy_status in ["no", "dont_know"]:
+                    patient.allergy = None
+                session.add(patient)
+        session.commit()
+        session.refresh(item)
+        return item
     updates = payload.model_dump(exclude_unset=True)
     for key, value in updates.items():
         setattr(item, key, value)
