@@ -1,3 +1,8 @@
+from app.models.ai_detection_analysis import (
+    AIDetectionAnalysis,
+    AIDetectionAnalysisCreate,
+    AIDetectionAnalysisUpdate,
+)
 from app.models.ai_detection_result import (
     AIDetectionResult,
     AIDetectionResultCreate,
@@ -45,6 +50,9 @@ from app.models.residual_ridge_assessment import (
 )
 
 __all__ = [
+    "AIDetectionAnalysis",
+    "AIDetectionAnalysisCreate",
+    "AIDetectionAnalysisUpdate",
     "AIDetectionResult",
     "AIDetectionResultCreate",
     "AIDetectionResultUpdate",

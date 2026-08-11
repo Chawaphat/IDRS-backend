@@ -180,7 +180,7 @@ app.include_router(
 
 app.include_router(
     ai_detection_results_router,
-    prefix="/ai-detection-results",
+    prefix="/dental-charts/{chart_id}/ai-detection-results",
     tags=["ai-detection-results"],
     dependencies=[Depends(require_chart_editor)]
 )

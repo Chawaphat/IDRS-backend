@@ -1,10 +1,6 @@
 from app.services.ai_detection_result import (
     create_ai_detection_result,
-    delete_ai_detection_result,
-    get_ai_detection_result_by_id,
-    get_ai_detection_result_by_image_id,
-    get_all_ai_detection_results,
-    update_ai_detection_result,
+    get_ai_detection_analyses_by_chart_id,
 )
 from app.services.dental_chart import (
     create_dental_chart,
@@ -91,11 +87,7 @@ from app.services.vdo_evaluation import (
 
 __all__ = [
     "create_ai_detection_result",
-    "delete_ai_detection_result",
-    "get_ai_detection_result_by_id",
-    "get_ai_detection_result_by_image_id",
-    "get_all_ai_detection_results",
-    "update_ai_detection_result",
+    "get_ai_detection_analyses_by_chart_id",
     "create_dental_chart",
     "delete_dental_chart",
     "get_all_dental_charts",

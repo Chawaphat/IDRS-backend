@@ -2,83 +2,34 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, HTTPException, Query, status
+from fastapi import APIRouter, Depends, status
 from sqlmodel import Session
 
 from app.core.database import get_session
 from app.services.ai_detection_result import (
     create_ai_detection_result,
-    delete_ai_detection_result,
-    get_ai_detection_result_by_id,
-    get_ai_detection_result_by_image_id,
-    get_all_ai_detection_results,
-    update_ai_detection_result,
+    get_ai_detection_analyses_by_chart_id,
 )
-from app.models.ai_detection_result import (
-    AIDetectionResult,
-    AIDetectionResultCreate,
-    AIDetectionResultUpdate,
+from app.models.ai_detection_analysis import (
+    AIDetectionAnalysis,
+    AIDetectionAnalysisCreate,
+    AIDetectionAnalysisRead,
 )
 
 router = APIRouter()
 
 
-@router.post("", response_model=AIDetectionResult, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=AIDetectionAnalysis, status_code=status.HTTP_201_CREATED)
 def create_ai_detection_result_endpoint(
-    payload: AIDetectionResultCreate,
+    payload: AIDetectionAnalysisCreate,
     session: Session = Depends(get_session),
-) -> AIDetectionResult:
-    return create_ai_detection_result(session, payload)
+) -> AIDetectionAnalysis:
+    return create_ai_detection_result(session, payload.image_id, payload)
 
 
-@router.get("", response_model=list[AIDetectionResult])
-def get_ai_detection_results_endpoint(
-    skip: int = Query(default=0, ge=0),
-    limit: int = Query(default=100, ge=1, le=1000),
+@router.get("", response_model=list[AIDetectionAnalysisRead])
+def get_ai_detection_results_by_chart_id_endpoint(
+    chart_id: uuid.UUID,
     session: Session = Depends(get_session),
-) -> list[AIDetectionResult]:
-    return get_all_ai_detection_results(session, skip=skip, limit=limit)
-
-
-@router.get("/{result_id}", response_model=AIDetectionResult)
-def get_ai_detection_result_by_id_endpoint(
-    result_id: uuid.UUID,
-    session: Session = Depends(get_session),
-) -> AIDetectionResult:
-    item = get_ai_detection_result_by_id(session, result_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="AI detection result not found")
-    return item
-
-@router.get("/by-image/{image_id}", response_model=AIDetectionResult)
-def get_ai_detection_result_by_image_id_endpoint(
-    image_id: uuid.UUID,
-    session: Session = Depends(get_session),
-) -> AIDetectionResult:
-    item = get_ai_detection_result_by_image_id(session, image_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="AI detection result not found")
-    return item
-
-
-@router.put("/{result_id}", response_model=AIDetectionResult)
-def update_ai_detection_result_endpoint(
-    result_id: uuid.UUID,
-    payload: AIDetectionResultUpdate,
-    session: Session = Depends(get_session),
-) -> AIDetectionResult:
-    item = get_ai_detection_result_by_id(session, result_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="AI detection result not found")
-    return update_ai_detection_result(session, item, payload)
-
-
-@router.delete("/{result_id}", status_code=status.HTTP_204_NO_CONTENT)
-def delete_ai_detection_result_endpoint(
-    result_id: uuid.UUID,
-    session: Session = Depends(get_session),
-) -> None:
-    item = get_ai_detection_result_by_id(session, result_id)
-    if item is None:
-        raise HTTPException(status_code=404, detail="AI detection result not found")
-    delete_ai_detection_result(session, item)
+) -> list[AIDetectionAnalysis]:
+    return get_ai_detection_analyses_by_chart_id(session, chart_id)

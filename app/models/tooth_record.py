@@ -58,6 +58,7 @@ class ToothRecord(SQLModel, table=True):
         sa_relationship_kwargs={"passive_deletes": True, "uselist": False}
     )
     
+    
 
     # 1-to-many
     caries: list["ToothCaries"] = Relationship(
