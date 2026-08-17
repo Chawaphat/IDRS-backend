@@ -1,15 +1,10 @@
 import uuid
 from datetime import date
-from typing import TYPE_CHECKING, Optional
+from typing import Optional
 
 from sqlalchemy import Column
 from sqlalchemy.dialects.postgresql import JSONB
-from sqlmodel import Field, Relationship, SQLModel
-
-from app.models.ai_detection_result import AIDetectionResultRead
-
-if TYPE_CHECKING:
-    from app.models.ai_detection_result import AIDetectionResult
+from sqlmodel import Field, SQLModel
 
 
 class AIDetectionAnalysisBase(SQLModel):
@@ -23,12 +18,11 @@ class AIDetectionAnalysis(AIDetectionAnalysisBase, table=True):
 
     analysis_id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
     created_at: date = Field(default_factory=date.today)
-
-    # 1-to-many: one analysis run produces many per-tooth results
-    results: list["AIDetectionResult"] = Relationship(
-        back_populates="analysis",
-        sa_relationship_kwargs={"passive_deletes": True},
-    )
+    # Full raw payload returned by the AI model for this run — image path,
+    # image_size, every finding (detections[]) and the full per-tooth
+    # breakdown incl. healthy teeth (teeth[]). This is the single source of
+    # truth for the analysis result; there is no separate per-tooth table.
+    detection_data: dict = Field(sa_column=Column(JSONB, nullable=False))
 
 
 class AIDetectionAnalysisCreate(SQLModel):
@@ -48,4 +42,4 @@ class AIDetectionAnalysisRead(SQLModel):
     image_id: uuid.UUID
     model_name: str
     model_version: str
-    results: list[AIDetectionResultRead] = []
+    detection_data: dict

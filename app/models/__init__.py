@@ -3,11 +3,6 @@ from app.models.ai_detection_analysis import (
     AIDetectionAnalysisCreate,
     AIDetectionAnalysisUpdate,
 )
-from app.models.ai_detection_result import (
-    AIDetectionResult,
-    AIDetectionResultCreate,
-    AIDetectionResultUpdate,
-)
 from app.models.dental_chart import DentalChart, DentalChartCreate, DentalChartUpdate
 from app.models.dental_status import DentalStatus
 from app.models.esthetic_evaluation import (
@@ -53,9 +48,6 @@ __all__ = [
     "AIDetectionAnalysis",
     "AIDetectionAnalysisCreate",
     "AIDetectionAnalysisUpdate",
-    "AIDetectionResult",
-    "AIDetectionResultCreate",
-    "AIDetectionResultUpdate",
     "DentalChart",
     "DentalChartCreate",
     "DentalChartUpdate",

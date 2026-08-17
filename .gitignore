@@ -47,3 +47,8 @@ htmlcov/
 .mypy_cache/
 .ruff_cache/
 .uv/
+
+# AI model weights — too large for git, download/copy separately
+# (see app/ai_models/README.md)
+app/ai_models/weights/*.pt
+app/ai_models/weights/*.pth
