@@ -17,3 +17,13 @@ requests>=2.31.0
 
 # Environment & Utilities
 python-dotenv>=1.0.1
+python-multipart>=0.0.9
+
+# AI Detection (app/services/ai_inference.py — Dentex model, Feature 5)
+# CPU build by default. For an NVIDIA GPU machine, install the CUDA build
+# from https://pytorch.org instead before installing the rest of this file.
+torch>=2.2.0
+torchvision>=0.17.0
+ultralytics>=8.2.0
+numpy>=1.26.0
+pillow>=10.2.0

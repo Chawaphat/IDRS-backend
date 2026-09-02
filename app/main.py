@@ -7,6 +7,7 @@ from app.core.database import create_db_and_tables
 from app.core.authen import get_current_profile, require_admin, require_chart_editor
 from app.routers import (
     auth_router,
+    ai_analysis_router,
     ai_detection_results_router,
     dental_charts_router,
     dental_status_router,
@@ -63,6 +64,13 @@ app.include_router(
     prefix="/profiles",
     tags=["profiles"],
     # Users handle their own auth inside the router
+)
+
+app.include_router(
+    ai_analysis_router,
+    prefix="/ai-analysis",
+    tags=["ai-analysis"],
+    dependencies=[Depends(require_chart_editor)],
 )
 
 app.include_router(

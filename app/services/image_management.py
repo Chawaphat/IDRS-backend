@@ -48,11 +48,23 @@ def update_image_management(
 
 def delete_image_management(session: Session, image_id: uuid.UUID) -> None:
     item = get_image_management_by_id(session, image_id)
+
+    # ai_detection_analysis.image_id has no ON DELETE CASCADE (no migration
+    # system for this project's existing tables) — clear dependent AI results
+    # first, or the FK constraint blocks the delete.
+    from app.models.ai_detection_analysis import AIDetectionAnalysis
+
+    dependent_analyses = session.exec(
+        select(AIDetectionAnalysis).where(AIDetectionAnalysis.image_id == image_id)
+    ).all()
+    for analysis in dependent_analyses:
+        session.delete(analysis)
+
     session.delete(item)
     session.commit()
 
 
-EXPIRES_IN = 86400  # 1 Days
+EXPIRES_IN = 86400  # 1 Daysfd
 
 def get_signed_url(image_path: str) -> str:
     SUPABASE_BUCKET = os.getenv("SUPABASE_BUCKET")
@@ -77,6 +89,7 @@ def get_all_image_management_signed(session: Session, chart_id: uuid.UUID, skip:
 # Parallelize the enrichment of items to generate signed URLs faster
 def enrich_item(item):
     item_dict = item.model_dump()
-    path = f"{item.image_type}/{item.image_file}"
+    image_type = item.image_type.value if hasattr(item.image_type, 'value') else item.image_type
+    path = f"{image_type}/{item.image_file}"
     item_dict["image_url"] = get_signed_url(path)
     return item_dict
