@@ -77,7 +77,7 @@ def get_signed_url(image_path: str) -> str:
     return result["signedURL"]
 
 from concurrent.futures import ThreadPoolExecutor
-def get_all_image_management_signed(session: Session, chart_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[dict]:
+def get_all_image_management_signed(session: Session, chart_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[ImageManagement]:
     statement = select(ImageManagement).where(ImageManagement.chart_id == chart_id).offset(skip).limit(limit)
     items = list(session.exec(statement).all())
     

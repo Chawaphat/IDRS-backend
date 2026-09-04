@@ -32,13 +32,13 @@ def create_image_management_endpoint(
         from fastapi import HTTPException
         raise HTTPException(status_code=400, detail=str(e))
 
-@router.get("", response_model=list[dict])
+@router.get("", response_model=list[ImageManagement])
 def get_image_management_signed_endpoint(
     chart_id: uuid.UUID,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
     session: Session = Depends(get_session),
-) -> list[dict]:
+) -> list[ImageManagement]:
     try:
         return get_all_image_management_signed(session, chart_id=chart_id, skip=skip, limit=limit)
     except Exception as e:
