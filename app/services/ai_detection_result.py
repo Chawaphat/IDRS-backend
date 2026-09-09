@@ -51,6 +51,9 @@ def get_ai_detection_analyses_by_chart_id(
     chart_id: uuid.UUID,
 ) -> list[AIDetectionAnalysis]:
 
+    if not chart_id:
+        raise HTTPException(status_code=404, detail="Chart not found")
+    
     statement = (
         select(AIDetectionAnalysis)
         .join(ImageManagement, AIDetectionAnalysis.image_id == ImageManagement.image_id)

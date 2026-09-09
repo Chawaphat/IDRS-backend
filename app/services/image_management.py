@@ -24,12 +24,6 @@ def get_image_management_by_id(session: Session, image_id: uuid.UUID) -> ImageMa
         raise HTTPException(status_code=404, detail="Image not found")
     return item
 
-
-def get_all_image_management(session: Session, chart_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[ImageManagement]:
-    statement = select(ImageManagement).where(ImageManagement.chart_id == chart_id).offset(skip).limit(limit)
-    return list(session.exec(statement).all())
-
-
 def update_image_management(
     session: Session,
     image_id: uuid.UUID,

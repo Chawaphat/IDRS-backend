@@ -33,9 +33,7 @@ from app.services.extraoral_exam import (
 from app.services.image_management import (
     create_image_management,
     delete_image_management,
-    get_all_image_management,
     get_all_image_management_signed,
-    get_image_management_by_id,
     get_signed_url,
     update_image_management,
 )
@@ -110,9 +108,7 @@ __all__ = [
     "update_extraoral_exam",
     "create_image_management",
     "delete_image_management",
-    "get_all_image_management",
     "get_all_image_management_signed",
-    "get_image_management_by_id",
     "get_signed_url",
     "update_image_management",
     "create_medical_history",

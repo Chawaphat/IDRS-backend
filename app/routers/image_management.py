@@ -9,9 +9,7 @@ from app.core.database import get_session
 from app.services.image_management import (
     create_image_management,
     delete_image_management,
-    get_all_image_management,
     get_all_image_management_signed,
-    get_image_management_by_id,
     update_image_management,
 )
 from app.models.image_management import ImageManagement, ImageManagementCreate, ImageManagementUpdate

@@ -36,7 +36,7 @@ class TestCreatePatient:
         """UTC-7-TC-01: Valid payload → Patient created and returned."""
         from app.models.patient import PatientCreate
         from app.services.patient import create_patient
-
+        
         payload = PatientCreate(
             hn_number="HN001",
             name="john doe",
