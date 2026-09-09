@@ -1,0 +1,747 @@
+{
+  "meta": {
+    "model_name": "DentexSegAndDet",
+    "model_version": "v1.0",
+    "run_at": "2026-09-09T21:10:45+00:00",
+    "conf_threshold": 0.25,
+    "dataset_root": "evaluation/testdataset",
+    "n_images": 141,
+    "subset_provenance": {
+      "method": "training_held_out",
+      "leakage_risk": "none",
+      "note": "Images come from the original training run's validation split, so they were never seen during training.",
+      "requested": 141,
+      "resolved": 141
+    },
+    "class_distribution": {
+      "Impacted": {
+        "images": 49,
+        "instances": 129
+      },
+      "Caries": {
+        "images": 128,
+        "instances": 448
+      },
+      "Periapical Lesion": {
+        "images": 15,
+        "instances": 18
+      },
+      "Deep Caries": {
+        "images": 61,
+        "instances": 106
+      }
+    }
+  },
+  "failures": [],
+  "detection": {
+    "n_predictions_full_curve": 4553,
+    "n_predictions_deployed": 811,
+    "n_ground_truths": 701,
+    "seconds_per_image": 0.66932155112513,
+    "map_conf_threshold": 0.001,
+    "map_50": {
+      "per_class_ap": {
+        "Impacted": 0.9234000219247649,
+        "Caries": 0.4522268472387447,
+        "Periapical Lesion": 0.2848098535343733,
+        "Deep Caries": 0.45571903499764765
+      },
+      "mAP": 0.5290389394238826,
+      "iou_thresholds": [
+        0.5
+      ],
+      "classes_scored": 4
+    },
+    "map_50_95": {
+      "per_class_ap": {
+        "Impacted": 0.6072229672999864,
+        "Caries": 0.31634709309157943,
+        "Periapical Lesion": 0.18949059803779125,
+        "Deep Caries": 0.3282834750136321
+      },
+      "mAP": 0.36033603336074727,
+      "iou_thresholds": [
+        0.5,
+        0.55,
+        0.6,
+        0.65,
+        0.7,
+        0.75,
+        0.8,
+        0.8500000000000001,
+        0.9,
+        0.95
+      ],
+      "classes_scored": 4
+    },
+    "map_50_at_deployed_conf": {
+      "per_class_ap": {
+        "Impacted": 0.8416475759051923,
+        "Caries": 0.331118157550714,
+        "Periapical Lesion": 0.23741344722707575,
+        "Deep Caries": 0.3871440458549286
+      },
+      "mAP": 0.44933080663447766,
+      "iou_thresholds": [
+        0.5
+      ],
+      "classes_scored": 4
+    },
+    "prf1": {
+      "per_class": {
+        "Impacted": {
+          "support": 129,
+          "predicted": 126,
+          "tp": 112,
+          "fp": 14,
+          "fn": 17,
+          "precision": 0.8888888888888888,
+          "recall": 0.8682170542635659,
+          "f1": 0.8784313725490195
+        },
+        "Caries": {
+          "support": 448,
+          "predicted": 599,
+          "tp": 244,
+          "fp": 355,
+          "fn": 204,
+          "precision": 0.4073455759599332,
+          "recall": 0.5446428571428571,
+          "f1": 0.4660936007640878
+        },
+        "Periapical Lesion": {
+          "support": 18,
+          "predicted": 18,
+          "tp": 6,
+          "fp": 12,
+          "fn": 12,
+          "precision": 0.3333333333333333,
+          "recall": 0.3333333333333333,
+          "f1": 0.3333333333333333
+        },
+        "Deep Caries": {
+          "support": 106,
+          "predicted": 68,
+          "tp": 45,
+          "fp": 23,
+          "fn": 61,
+          "precision": 0.6617647058823529,
+          "recall": 0.42452830188679247,
+          "f1": 0.517241379310345
+        }
+      },
+      "macro_f1": 0.5487749214891964,
+      "iou_threshold": 0.5
+    }
+  },
+  "assignment": {
+    "assignment_accuracy": 0.9238329238329238,
+    "matched_detections": 407,
+    "correct": 376,
+    "unassigned": 0,
+    "errors": [
+      {
+        "image_id": 289,
+        "class": "Impacted",
+        "expected_fdi": 48,
+        "actual_fdi": 38
+      },
+      {
+        "image_id": 119,
+        "class": "Impacted",
+        "expected_fdi": 18,
+        "actual_fdi": 28
+      },
+      {
+        "image_id": 119,
+        "class": "Impacted",
+        "expected_fdi": 48,
+        "actual_fdi": 38
+      },
+      {
+        "image_id": 582,
+        "class": "Impacted",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 154,
+        "class": "Impacted",
+        "expected_fdi": 28,
+        "actual_fdi": 27
+      },
+      {
+        "image_id": 546,
+        "class": "Impacted",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 289,
+        "class": "Impacted",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 71,
+        "class": "Impacted",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 582,
+        "class": "Impacted",
+        "expected_fdi": 38,
+        "actual_fdi": 37
+      },
+      {
+        "image_id": 645,
+        "class": "Caries",
+        "expected_fdi": 38,
+        "actual_fdi": 47
+      },
+      {
+        "image_id": 645,
+        "class": "Caries",
+        "expected_fdi": 46,
+        "actual_fdi": 36
+      },
+      {
+        "image_id": 324,
+        "class": "Caries",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 151,
+        "class": "Caries",
+        "expected_fdi": 36,
+        "actual_fdi": 35
+      },
+      {
+        "image_id": 96,
+        "class": "Caries",
+        "expected_fdi": 15,
+        "actual_fdi": 25
+      },
+      {
+        "image_id": 119,
+        "class": "Caries",
+        "expected_fdi": 47,
+        "actual_fdi": 37
+      },
+      {
+        "image_id": 28,
+        "class": "Caries",
+        "expected_fdi": 27,
+        "actual_fdi": 26
+      },
+      {
+        "image_id": 15,
+        "class": "Caries",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 431,
+        "class": "Caries",
+        "expected_fdi": 45,
+        "actual_fdi": 44
+      },
+      {
+        "image_id": 538,
+        "class": "Caries",
+        "expected_fdi": 37,
+        "actual_fdi": 38
+      },
+      {
+        "image_id": 311,
+        "class": "Caries",
+        "expected_fdi": 36,
+        "actual_fdi": 37
+      },
+      {
+        "image_id": 401,
+        "class": "Caries",
+        "expected_fdi": 45,
+        "actual_fdi": 44
+      },
+      {
+        "image_id": 548,
+        "class": "Caries",
+        "expected_fdi": 35,
+        "actual_fdi": 34
+      },
+      {
+        "image_id": 96,
+        "class": "Caries",
+        "expected_fdi": 16,
+        "actual_fdi": 26
+      },
+      {
+        "image_id": 401,
+        "class": "Caries",
+        "expected_fdi": 15,
+        "actual_fdi": 14
+      },
+      {
+        "image_id": 645,
+        "class": "Caries",
+        "expected_fdi": 24,
+        "actual_fdi": 13
+      },
+      {
+        "image_id": 431,
+        "class": "Caries",
+        "expected_fdi": 47,
+        "actual_fdi": 46
+      },
+      {
+        "image_id": 645,
+        "class": "Caries",
+        "expected_fdi": 25,
+        "actual_fdi": 16
+      },
+      {
+        "image_id": 645,
+        "class": "Periapical Lesion",
+        "expected_fdi": 47,
+        "actual_fdi": 37
+      },
+      {
+        "image_id": 175,
+        "class": "Deep Caries",
+        "expected_fdi": 18,
+        "actual_fdi": 17
+      },
+      {
+        "image_id": 64,
+        "class": "Deep Caries",
+        "expected_fdi": 36,
+        "actual_fdi": 37
+      },
+      {
+        "image_id": 17,
+        "class": "Deep Caries",
+        "expected_fdi": 16,
+        "actual_fdi": 17
+      }
+    ]
+  },
+  "held_out_baseline": {
+    "source": "/Users/monfufuu/Dev/repo/IDRS-backend/evaluation/BoxF1_curve/results.csv",
+    "epochs_trained": 100,
+    "best_epoch": {
+      "epoch": 57,
+      "map_50": 0.55808,
+      "map_50_95": 0.38353,
+      "precision": 0.58836,
+      "recall": 0.51983
+    },
+    "last_epoch": {
+      "epoch": 100,
+      "map_50": 0.47738,
+      "map_50_95": 0.31886,
+      "precision": 0.6057,
+      "recall": 0.47353
+    },
+    "f1_curve": "/Users/monfufuu/Dev/repo/IDRS-backend/evaluation/BoxF1_curve/BoxF1_curve.png",
+    "comparison": {
+      "map_50": {
+        "measured": 0.5290389394238826,
+        "best_epoch": 0.55808,
+        "inflation_vs_best_epoch": -0.02904106057611744,
+        "last_epoch": 0.47738,
+        "inflation_vs_last_epoch": 0.051658939423882555
+      },
+      "map_50_95": {
+        "measured": 0.36033603336074727,
+        "best_epoch": 0.38353,
+        "inflation_vs_best_epoch": -0.023193966639252717,
+        "last_epoch": 0.31886,
+        "inflation_vs_last_epoch": 0.04147603336074729
+      }
+    }
+  },
+  "segmentation": {
+    "mean_iou": 0.6587469469857682,
+    "mean_iou_aggregated": 0.6350734483900856,
+    "enumeration_accuracy": 0.861307901907357,
+    "teeth_evaluated": 3670,
+    "per_fdi": {
+      "11": {
+        "count": 125,
+        "mean_iou": 0.7033559192599405,
+        "enumeration_accuracy": 0.912
+      },
+      "12": {
+        "count": 126,
+        "mean_iou": 0.6495598161906323,
+        "enumeration_accuracy": 0.873015873015873
+      },
+      "13": {
+        "count": 121,
+        "mean_iou": 0.5849949127176055,
+        "enumeration_accuracy": 0.7851239669421488
+      },
+      "14": {
+        "count": 117,
+        "mean_iou": 0.5649127236647129,
+        "enumeration_accuracy": 0.717948717948718
+      },
+      "15": {
+        "count": 116,
+        "mean_iou": 0.5739856032483843,
+        "enumeration_accuracy": 0.7413793103448276
+      },
+      "16": {
+        "count": 116,
+        "mean_iou": 0.6251702669061018,
+        "enumeration_accuracy": 0.7844827586206896
+      },
+      "17": {
+        "count": 118,
+        "mean_iou": 0.645073688433373,
+        "enumeration_accuracy": 0.8305084745762712
+      },
+      "18": {
+        "count": 76,
+        "mean_iou": 0.5906132182374119,
+        "enumeration_accuracy": 0.7631578947368421
+      },
+      "21": {
+        "count": 126,
+        "mean_iou": 0.6957489762748036,
+        "enumeration_accuracy": 0.9126984126984127
+      },
+      "22": {
+        "count": 122,
+        "mean_iou": 0.6736632395610777,
+        "enumeration_accuracy": 0.8688524590163934
+      },
+      "23": {
+        "count": 125,
+        "mean_iou": 0.6449512905218482,
+        "enumeration_accuracy": 0.864
+      },
+      "24": {
+        "count": 115,
+        "mean_iou": 0.6126127569811315,
+        "enumeration_accuracy": 0.8260869565217391
+      },
+      "25": {
+        "count": 112,
+        "mean_iou": 0.6177070693606534,
+        "enumeration_accuracy": 0.8125
+      },
+      "26": {
+        "count": 113,
+        "mean_iou": 0.7054296204646242,
+        "enumeration_accuracy": 0.9203539823008849
+      },
+      "27": {
+        "count": 121,
+        "mean_iou": 0.6789871995215103,
+        "enumeration_accuracy": 0.859504132231405
+      },
+      "28": {
+        "count": 88,
+        "mean_iou": 0.658394428304435,
+        "enumeration_accuracy": 0.8863636363636364
+      },
+      "31": {
+        "count": 126,
+        "mean_iou": 0.6440952370680194,
+        "enumeration_accuracy": 0.8492063492063492
+      },
+      "32": {
+        "count": 126,
+        "mean_iou": 0.6835609475414226,
+        "enumeration_accuracy": 0.9047619047619048
+      },
+      "33": {
+        "count": 126,
+        "mean_iou": 0.7001199775079351,
+        "enumeration_accuracy": 0.8968253968253969
+      },
+      "34": {
+        "count": 122,
+        "mean_iou": 0.6874754191854148,
+        "enumeration_accuracy": 0.9262295081967213
+      },
+      "35": {
+        "count": 120,
+        "mean_iou": 0.6655081785595646,
+        "enumeration_accuracy": 0.875
+      },
+      "36": {
+        "count": 98,
+        "mean_iou": 0.6994426042866971,
+        "enumeration_accuracy": 0.8673469387755102
+      },
+      "37": {
+        "count": 118,
+        "mean_iou": 0.7230553540168685,
+        "enumeration_accuracy": 0.8898305084745762
+      },
+      "38": {
+        "count": 83,
+        "mean_iou": 0.6959419994140837,
+        "enumeration_accuracy": 0.9036144578313253
+      },
+      "41": {
+        "count": 123,
+        "mean_iou": 0.6696711182290475,
+        "enumeration_accuracy": 0.9024390243902439
+      },
+      "42": {
+        "count": 125,
+        "mean_iou": 0.6501032990826424,
+        "enumeration_accuracy": 0.896
+      },
+      "43": {
+        "count": 125,
+        "mean_iou": 0.6501391285844842,
+        "enumeration_accuracy": 0.896
+      },
+      "44": {
+        "count": 122,
+        "mean_iou": 0.6374202508988629,
+        "enumeration_accuracy": 0.8852459016393442
+      },
+      "45": {
+        "count": 115,
+        "mean_iou": 0.6469107634296162,
+        "enumeration_accuracy": 0.8347826086956521
+      },
+      "46": {
+        "count": 97,
+        "mean_iou": 0.6945708224865357,
+        "enumeration_accuracy": 0.8865979381443299
+      },
+      "47": {
+        "count": 118,
+        "mean_iou": 0.7116619795260055,
+        "enumeration_accuracy": 0.8813559322033898
+      },
+      "48": {
+        "count": 89,
+        "mean_iou": 0.6928756830867445,
+        "enumeration_accuracy": 0.8764044943820225
+      }
+    },
+    "source": "quadrant_enumeration",
+    "n_images": 127,
+    "provenance": {
+      "method": "reconstructed_from_seed",
+      "leakage_risk": "none",
+      "seed": 42,
+      "train_ratio": 0.8,
+      "population": 634,
+      "train_size": 507,
+      "val_size": 127,
+      "assumption": "train_unet.py was run with --seed 42 and --train_ratio 0.8 (its defaults). A different value makes this split wrong, which verify_split is there to detect."
+    },
+    "split_verification": {
+      "verified": true,
+      "gap": 0.11135535533821772,
+      "train_mean_iou": 0.7701023023239859,
+      "val_mean_iou": 0.6587469469857682,
+      "reason": "model scores +0.1114 mean IoU higher on the reconstructed train half, consistent with it having trained on those images",
+      "control_images": 127
+    }
+  },
+  "edge_cases": {
+    "cases": [
+      {
+        "image": "train_283.blur.png",
+        "degradation": "blur",
+        "completed": true,
+        "error": null,
+        "n_detections": 0,
+        "min_confidence": null,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_646.low_contrast.png",
+        "degradation": "low_contrast",
+        "completed": true,
+        "error": null,
+        "n_detections": 0,
+        "min_confidence": null,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_564.cropped.png",
+        "degradation": "cropped",
+        "completed": true,
+        "error": null,
+        "n_detections": 5,
+        "min_confidence": 0.3684,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_289.dark.png",
+        "degradation": "dark",
+        "completed": true,
+        "error": null,
+        "n_detections": 7,
+        "min_confidence": 0.3131,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_271.noisy.png",
+        "degradation": "noisy",
+        "completed": true,
+        "error": null,
+        "n_detections": 1,
+        "min_confidence": 0.3057,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_383.blur.png",
+        "degradation": "blur",
+        "completed": true,
+        "error": null,
+        "n_detections": 3,
+        "min_confidence": 0.2774,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_700.low_contrast.png",
+        "degradation": "low_contrast",
+        "completed": true,
+        "error": null,
+        "n_detections": 1,
+        "min_confidence": 0.8087,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_54.cropped.png",
+        "degradation": "cropped",
+        "completed": true,
+        "error": null,
+        "n_detections": 4,
+        "min_confidence": 0.3203,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_541.dark.png",
+        "degradation": "dark",
+        "completed": true,
+        "error": null,
+        "n_detections": 2,
+        "min_confidence": 0.5607,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_113.noisy.png",
+        "degradation": "noisy",
+        "completed": true,
+        "error": null,
+        "n_detections": 1,
+        "min_confidence": 0.315,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_447.blur.png",
+        "degradation": "blur",
+        "completed": true,
+        "error": null,
+        "n_detections": 0,
+        "min_confidence": null,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_441.low_contrast.png",
+        "degradation": "low_contrast",
+        "completed": true,
+        "error": null,
+        "n_detections": 1,
+        "min_confidence": 0.3314,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_110.cropped.png",
+        "degradation": "cropped",
+        "completed": true,
+        "error": null,
+        "n_detections": 3,
+        "min_confidence": 0.3276,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_137.dark.png",
+        "degradation": "dark",
+        "completed": true,
+        "error": null,
+        "n_detections": 5,
+        "min_confidence": 0.3285,
+        "below_threshold": 0
+      },
+      {
+        "image": "train_108.noisy.png",
+        "degradation": "noisy",
+        "completed": true,
+        "error": null,
+        "n_detections": 0,
+        "min_confidence": null,
+        "below_threshold": 0
+      }
+    ],
+    "all_completed": true,
+    "unfiltered_detections": 0,
+    "n_images": 15
+  },
+  "targets": {
+    "map_50": 0.5,
+    "map_50_95": 0.3,
+    "mean_iou": 0.65,
+    "enumeration_accuracy": 0.85,
+    "assignment_accuracy": 0.85
+  },
+  "verdicts": {
+    "AITC-01": {
+      "id": "AITC-01",
+      "objective": "Evaluate disease detection accuracy of YOLOv8x",
+      "checks": {
+        "mAP@0.5 >= 0.50": true,
+        "mAP@0.5:0.95 >= 0.30": true,
+        "per-class F1 >= its target": true
+      },
+      "per_class_f1_pass": {
+        "Impacted": true,
+        "Caries": true,
+        "Periapical Lesion": true,
+        "Deep Caries": true
+      },
+      "verdict": "PASS"
+    },
+    "AITC-02": {
+      "id": "AITC-02",
+      "objective": "Evaluate tooth enumeration (segmentation) accuracy of SEUNet",
+      "checks": {
+        "Mean IoU >= 0.70": true,
+        "Enumeration Accuracy >= 0.90": true
+      },
+      "verdict": "PASS"
+    },
+    "AITC-03": {
+      "id": "AITC-03",
+      "objective": "Evaluate Tooth-Disease mapping logic",
+      "checks": {
+        "Assignment Accuracy >= 0.85": true
+      },
+      "verdict": "PASS"
+    },
+    "AITC-04": {
+      "id": "AITC-04",
+      "objective": "Evaluate model robustness on edge-case images",
+      "checks": {
+        "pipeline completes on every image": true,
+        "no unfiltered low-confidence detections": true
+      },
+      "verdict": "PASS"
+    }
+  }
+}

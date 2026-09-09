@@ -1,0 +1,1265 @@
+{
+  "images": [
+    {
+      "image_id": 2,
+      "file_name": "train_283.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 15,
+      "file_name": "train_646.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 17,
+      "file_name": "train_564.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 10
+    },
+    {
+      "image_id": 28,
+      "file_name": "train_289.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 13
+    },
+    {
+      "image_id": 34,
+      "file_name": "train_271.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 40,
+      "file_name": "train_383.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 9
+    },
+    {
+      "image_id": 42,
+      "file_name": "train_700.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 47,
+      "file_name": "train_54.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 64,
+      "file_name": "train_541.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted",
+        "Periapical Lesion"
+      ],
+      "n_findings": 9
+    },
+    {
+      "image_id": 65,
+      "file_name": "train_113.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 71,
+      "file_name": "train_447.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 9
+    },
+    {
+      "image_id": 76,
+      "file_name": "train_441.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 83,
+      "file_name": "train_110.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 85,
+      "file_name": "train_137.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 92,
+      "file_name": "train_108.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 94,
+      "file_name": "train_309.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 96,
+      "file_name": "train_424.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 98,
+      "file_name": "train_87.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 102,
+      "file_name": "train_223.png",
+      "disease_classes": [
+        "Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 104,
+      "file_name": "train_328.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 112,
+      "file_name": "train_355.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 119,
+      "file_name": "train_300.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 120,
+      "file_name": "train_500.png",
+      "disease_classes": [
+        "Impacted"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 123,
+      "file_name": "train_35.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 128,
+      "file_name": "train_240.png",
+      "disease_classes": [
+        "Impacted",
+        "Periapical Lesion"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 134,
+      "file_name": "train_319.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 143,
+      "file_name": "train_127.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 144,
+      "file_name": "train_451.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 9
+    },
+    {
+      "image_id": 146,
+      "file_name": "train_704.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 10
+    },
+    {
+      "image_id": 150,
+      "file_name": "train_169.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 151,
+      "file_name": "train_303.png",
+      "disease_classes": [
+        "Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 154,
+      "file_name": "train_255.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted",
+        "Periapical Lesion"
+      ],
+      "n_findings": 11
+    },
+    {
+      "image_id": 175,
+      "file_name": "train_332.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 189,
+      "file_name": "train_437.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 192,
+      "file_name": "train_497.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 194,
+      "file_name": "train_103.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 195,
+      "file_name": "train_155.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 196,
+      "file_name": "train_356.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 209,
+      "file_name": "train_596.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 210,
+      "file_name": "train_130.png",
+      "disease_classes": [
+        "Deep Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 221,
+      "file_name": "train_618.png",
+      "disease_classes": [
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 224,
+      "file_name": "train_549.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 225,
+      "file_name": "train_464.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 226,
+      "file_name": "train_676.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 228,
+      "file_name": "train_213.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 242,
+      "file_name": "train_358.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 12
+    },
+    {
+      "image_id": 245,
+      "file_name": "train_343.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 15
+    },
+    {
+      "image_id": 248,
+      "file_name": "train_287.png",
+      "disease_classes": [
+        "Deep Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 249,
+      "file_name": "train_365.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 250,
+      "file_name": "train_515.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 257,
+      "file_name": "train_602.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 266,
+      "file_name": "train_26.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 267,
+      "file_name": "train_674.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 278,
+      "file_name": "train_373.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 282,
+      "file_name": "train_57.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 283,
+      "file_name": "train_555.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 289,
+      "file_name": "train_353.png",
+      "disease_classes": [
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 295,
+      "file_name": "train_93.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 298,
+      "file_name": "train_304.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 299,
+      "file_name": "train_585.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 10
+    },
+    {
+      "image_id": 309,
+      "file_name": "train_265.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted",
+        "Periapical Lesion"
+      ],
+      "n_findings": 12
+    },
+    {
+      "image_id": 311,
+      "file_name": "train_468.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 318,
+      "file_name": "train_214.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 324,
+      "file_name": "train_636.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 325,
+      "file_name": "train_281.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted",
+        "Periapical Lesion"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 328,
+      "file_name": "train_123.png",
+      "disease_classes": [],
+      "n_findings": 0
+    },
+    {
+      "image_id": 333,
+      "file_name": "train_586.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 334,
+      "file_name": "train_386.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 339,
+      "file_name": "train_219.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 341,
+      "file_name": "train_363.png",
+      "disease_classes": [
+        "Periapical Lesion"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 342,
+      "file_name": "train_685.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 344,
+      "file_name": "train_260.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 11
+    },
+    {
+      "image_id": 363,
+      "file_name": "train_484.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 366,
+      "file_name": "train_612.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 367,
+      "file_name": "train_695.png",
+      "disease_classes": [],
+      "n_findings": 0
+    },
+    {
+      "image_id": 380,
+      "file_name": "train_151.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 381,
+      "file_name": "train_692.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 395,
+      "file_name": "train_488.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 401,
+      "file_name": "train_334.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 12
+    },
+    {
+      "image_id": 409,
+      "file_name": "train_478.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 415,
+      "file_name": "train_566.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 8
+    },
+    {
+      "image_id": 430,
+      "file_name": "train_148.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 10
+    },
+    {
+      "image_id": 431,
+      "file_name": "train_403.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 437,
+      "file_name": "train_24.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 445,
+      "file_name": "train_594.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 454,
+      "file_name": "train_6.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 456,
+      "file_name": "train_237.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 459,
+      "file_name": "train_473.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 462,
+      "file_name": "train_651.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 484,
+      "file_name": "train_144.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 488,
+      "file_name": "train_282.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 10
+    },
+    {
+      "image_id": 489,
+      "file_name": "train_99.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 498,
+      "file_name": "train_119.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 499,
+      "file_name": "train_109.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 9
+    },
+    {
+      "image_id": 502,
+      "file_name": "train_364.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 505,
+      "file_name": "train_147.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 506,
+      "file_name": "train_81.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 517,
+      "file_name": "train_560.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 521,
+      "file_name": "train_572.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 524,
+      "file_name": "train_672.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 534,
+      "file_name": "train_690.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 535,
+      "file_name": "train_659.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 538,
+      "file_name": "train_432.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 546,
+      "file_name": "train_270.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 548,
+      "file_name": "train_39.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 554,
+      "file_name": "train_167.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 557,
+      "file_name": "train_207.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 561,
+      "file_name": "train_539.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 562,
+      "file_name": "train_17.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 565,
+      "file_name": "train_268.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 566,
+      "file_name": "train_182.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 574,
+      "file_name": "train_279.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 9
+    },
+    {
+      "image_id": 582,
+      "file_name": "train_75.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted",
+        "Periapical Lesion"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 590,
+      "file_name": "train_21.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 592,
+      "file_name": "train_333.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 594,
+      "file_name": "train_537.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 598,
+      "file_name": "train_307.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 602,
+      "file_name": "train_633.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 606,
+      "file_name": "train_163.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 611,
+      "file_name": "train_508.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 617,
+      "file_name": "train_449.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 618,
+      "file_name": "train_547.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 626,
+      "file_name": "train_357.png",
+      "disease_classes": [],
+      "n_findings": 0
+    },
+    {
+      "image_id": 627,
+      "file_name": "train_567.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 2
+    },
+    {
+      "image_id": 631,
+      "file_name": "train_642.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 633,
+      "file_name": "train_53.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries",
+        "Impacted"
+      ],
+      "n_findings": 10
+    },
+    {
+      "image_id": 634,
+      "file_name": "train_427.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 635,
+      "file_name": "train_641.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 5
+    },
+    {
+      "image_id": 636,
+      "file_name": "train_667.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 641,
+      "file_name": "train_23.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 644,
+      "file_name": "train_601.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 645,
+      "file_name": "train_197.png",
+      "disease_classes": [
+        "Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 6
+    },
+    {
+      "image_id": 656,
+      "file_name": "train_180.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 4
+    },
+    {
+      "image_id": 665,
+      "file_name": "train_288.png",
+      "disease_classes": [
+        "Caries"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 666,
+      "file_name": "train_71.png",
+      "disease_classes": [],
+      "n_findings": 0
+    },
+    {
+      "image_id": 673,
+      "file_name": "train_45.png",
+      "disease_classes": [
+        "Deep Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 677,
+      "file_name": "train_185.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 11
+    },
+    {
+      "image_id": 681,
+      "file_name": "train_227.png",
+      "disease_classes": [
+        "Deep Caries"
+      ],
+      "n_findings": 1
+    },
+    {
+      "image_id": 688,
+      "file_name": "train_607.png",
+      "disease_classes": [
+        "Caries",
+        "Periapical Lesion"
+      ],
+      "n_findings": 3
+    },
+    {
+      "image_id": 697,
+      "file_name": "train_224.png",
+      "disease_classes": [
+        "Caries",
+        "Impacted"
+      ],
+      "n_findings": 7
+    },
+    {
+      "image_id": 705,
+      "file_name": "train_370.png",
+      "disease_classes": [
+        "Caries",
+        "Deep Caries"
+      ],
+      "n_findings": 8
+    }
+  ],
+  "provenance": {
+    "method": "training_held_out",
+    "leakage_risk": "none",
+    "note": "Images come from the original training run's validation split, so they were never seen during training.",
+    "requested": 141,
+    "resolved": 141
+  },
+  "class_distribution": {
+    "Impacted": {
+      "images": 49,
+      "instances": 129
+    },
+    "Caries": {
+      "images": 128,
+      "instances": 448
+    },
+    "Periapical Lesion": {
+      "images": 15,
+      "instances": 18
+    },
+    "Deep Caries": {
+      "images": 61,
+      "instances": 106
+    }
+  }
+}

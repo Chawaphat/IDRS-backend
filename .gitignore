@@ -53,6 +53,9 @@ htmlcov/
 app/ai_models/weights/*.pt
 app/ai_models/weights/*.pth
 
-# AI model evaluation output
-evaluation/results/
+# AI model evaluation
+# The DENTEX dataset (16GB) is downloaded separately; the generated edge-case
+# images are large and reproducible. The report and metrics are the evidence
+# for Test Plan Chapter 5, so they are kept.
 evaluation/testdataset/
+evaluation/results/edge_cases/
