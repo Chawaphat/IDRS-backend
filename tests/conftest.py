@@ -25,6 +25,23 @@ if "supabase_auth" not in sys.modules:
     _sb_auth = _make_stub("supabase_auth")
     _sb_auth.Session = MagicMock()  # used as a type-hint in authen.py
 
+# The AI inference stack (torch / numpy / requests / pillow) is only needed to
+# actually run the Dentex model. Service-layer unit tests mock
+# `ai_inference.predict`, so stub the heavy imports to keep the suite runnable
+# on a machine without the ML dependencies installed.
+for _heavy in ("numpy", "requests", "torch"):
+    if _heavy not in sys.modules:
+        _make_stub(_heavy)
+
+if "PIL" not in sys.modules:
+    _pil = _make_stub("PIL")
+    _pil_image = _make_stub("PIL.Image")
+    _pil.Image = _pil_image
+
+if "app.ai_models.seunet_arch" not in sys.modules:
+    _seunet = _make_stub("app.ai_models.seunet_arch")
+    _seunet.SEUNet = MagicMock()
+
 
 @pytest.fixture(autouse=True)
 def _patch_db_init(monkeypatch):

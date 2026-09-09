@@ -1,0 +1,250 @@
+// IDRS Backend – Database Schema (DBML for dbdiagram.io)
+// Paste this at https://dbdiagram.io/d
+
+Table profiles {
+  id            uuid      [pk, note: "Primary key"]
+  license_id    varchar(50)
+  full_name     varchar(255) [not null]
+  role          user_role  [not null, note: "dentist | assistant | admin"]
+  phone         varchar(15)
+  created_at    timestamp  [not null]
+}
+
+Table patients {
+  patient_id    uuid       [pk]
+  hn_number     varchar(20) [unique, not null]
+  name          varchar(255) [not null]
+  sex           varchar(10)
+  age           int
+  phone         varchar(15)
+  allergy       varchar(20)
+  dentist_id    uuid       [ref: > profiles.id]
+  created_at    timestamp  [not null]
+}
+
+Table dental_charts {
+  chart_id      uuid  [pk]
+  patient_id    uuid  [not null, ref: > patients.patient_id]
+  dentist_id    uuid  [not null, ref: > profiles.id]
+  record_date   date  [not null]
+  created_at    timestamp [not null]
+}
+
+Table image_management {
+  image_id      uuid  [pk]
+  chart_id      uuid  [not null, ref: > dental_charts.chart_id]
+  image_type    image_category [not null, note: "intraoral | panoramic_xray | other"]
+  image_url     text
+  image_file    text
+  description   text
+  uploaded_at   timestamp [not null]
+}
+
+Table ai_detection_results {
+  result_id       uuid  [pk]
+  image_id        uuid  [not null, ref: > image_management.image_id]
+  detection_data  jsonb [not null]
+}
+
+Table medical_histories {
+  history_id               uuid  [pk]
+  chart_id                 uuid  [unique, not null, ref: - dental_charts.chart_id]
+  chief_complaint          text
+  present_illness          text
+  medical_history          text
+  regular_doctor_visits    boolean [default: false]
+  regular_doctor_months    int
+  clinic_name              text
+  current_medication       json
+  allergy_status           allergy_status_type [not null, note: "no | yes | dont_know"]
+  allergy_detail           text
+  dental_history           text
+  patient_expectation      patient_expectations_type[]
+  patient_expectation_other text
+  patient_self_evaluation  text
+  patient_expected_outcome text
+  edentulous_time          text
+  previous_denture_count   text
+  present_denture_age      text
+  denture_complaint        text
+  note                     text
+  created_at               timestamp [not null]
+}
+
+Table extraoral_exams {
+  exam_id                    uuid  [pk]
+  chart_id                   uuid  [unique, not null, ref: - dental_charts.chart_id]
+  facial_symmetry            facial_symmetry_type [not null, note: "symmetry | asymmetry"]
+  facial_profile             facial_profile_type  [not null, note: "convex | straight | concave"]
+  muscle_pain                jsonb
+  joint_pain                 joint_pain_type[]
+  joint_sound                joint_sound_type     [note: "no | clicking | crepitus | popping"]
+  jaw_deviation              jaw_deviation_type   [note: "none | to_left | to_right"]
+  has_limited_opening        boolean
+  mouth_opening_mm           int
+  has_limited_movement       boolean
+  specify_movement_detail    text
+  parafunctional_habit       habit_type[]
+  parafunctional_habit_other text
+  factors_affecting_tooth_wear jsonb
+  note                       text
+}
+
+Table esthetic_evaluation {
+  esthetic_id          uuid  [pk]
+  chart_id             uuid  [unique, not null, ref: - dental_charts.chart_id]
+  occlusal_plane       occlusal_plane_type      [note: "parallel | canted_right | canted_left"]
+  midline_discrepancy  midline_discrepancy_type [note: "symmetric | right_shift | left_shift"]
+  lip_thickness        lip_thickness_type       [note: "full | average | thin"]
+  lip_length           lip_length_type          [note: "long | average | short"]
+  upper_tooth_exposure float
+  lower_tooth_exposure float
+  midline_shift        float
+  nasolabial_angle     nasolabial_angle_type    [note: "normal | prominent_maxilla | retruded_maxilla"]
+  dentofacial_analysis jsonb
+  fv_sound             boolean
+  closest_speaking     float
+  reference_teeth      int[]
+  note                 text
+}
+
+Table vdo_evaluations {
+  vdo_id              uuid  [pk]
+  chart_id            uuid  [unique, not null, ref: - dental_charts.chart_id]
+  facial_soft_tissue  facial_condition_type[]
+  closest_speaking    float
+  free_way_space      float
+  bite_type           bite_type [note: "normal_bite | deep_bite | edge_to_edge | crossbite"]
+  reference_teeth     int[]
+}
+
+Table dental_status {
+  status_id   uuid  [pk]
+  chart_id    uuid  [not null, ref: > dental_charts.chart_id]
+  created_at  timestamp [not null]
+}
+
+Table occlusal_analysis {
+  occlusal_id        uuid  [pk]
+  chart_id           uuid  [not null, ref: > dental_charts.chart_id]
+  right_molar        molar_type [note: "class_i | class_ii | class_iii"]
+  left_molar         molar_type
+  overlap_horizontal float
+  overlap_vertical   float
+  anterior_slide     float
+  lateral_slide      float
+}
+
+Table occlusal_contacts {
+  contact_id   uuid  [pk]
+  occlusal_id  uuid  [not null, ref: > occlusal_analysis.occlusal_id]
+  contact_type contact_type [not null, note: "mip | premature | protrusive | working | non_working"]
+  upper_tooth  int   [not null]
+  lower_tooth  int   [not null]
+}
+
+Table residual_ridge_assessment {
+  assessment_id      uuid  [pk]
+  chart_id           uuid  [unique, not null, ref: - dental_charts.chart_id]
+  ridge_height       ridge_height_type   [note: "high | low_flat | knife_edge"]
+  ridge_width        ridge_width_type    [note: "round | narrow"]
+  jaw_size           jaw_size_type       [note: "small | medium | large"]
+  ridge_shape_upper  ridge_shape_type    [note: "u_shape | v_shape | undercut | flat"]
+  ridge_shape_lower  ridge_shape_type
+  ridge_relation     ridge_relation_type [note: "class_i | class_ii | class_iii | crossbite"]
+  ridge_parallelism  ridge_parallelism_type [note: "parallel | divergent"]
+  interridge_space   interridge_space_type  [note: "sufficient | insufficient"]
+  lower_arch_form    arch_form_type      [note: "square | taper | ovoid"]
+  palatal_vault      palatal_vault_type  [note: "average | steep | v_shape | shallow"]
+  palatal_throat_form palatal_throat_form_type [note: "class_i | class_ii | class_iii"]
+  freenum_attachment jsonb
+  ridge_deformity    jsonb
+  torus_palatinus    jsonb
+  tongue_size        tongue_size_type    [note: "small | medium | large"]
+  tongue_position    tongue_position_type [note: "normal | retracted"]
+  saliva_amount      saliva_amount_type  [note: "normal | xerostomia"]
+  saliva_consistency saliva_consistency_type [note: "thick | thin"]
+  lip_mobility       lip_mobility_type   [note: "normal | highly_active | relatively_inactive"]
+  facial_muscle_tone facial_muscle_tone_type [note: "tense | average | flaccid"]
+  mental_attitude    mental_attitude_type [note: "philosophical | exacting | hysterical | indifferent"]
+  created_at         timestamp [not null]
+  updated_at         timestamp [not null]
+}
+
+Table tooth_record {
+  tooth_id     uuid  [pk]
+  status_id    uuid  [not null, ref: > dental_status.status_id]
+  tooth_number int   [not null, note: "FDI tooth number"]
+  tooth_type   tooth_type_enum [not null, note: "edentulous | primary | permanent | implant"]
+  note         text
+  created_at   timestamp [not null]
+  updated_at   timestamp [not null]
+}
+
+Table tooth_caries {
+  caries_id  uuid  [pk]
+  tooth_id   uuid  [not null, ref: > tooth_record.tooth_id]
+  surface    tooth_surface_enum [not null, note: "M | D | B | L | P | O"]
+  depth      caries_depth_enum  [not null, note: "enamel | dentine | pulp"]
+  note       text
+  created_at timestamp [not null]
+}
+
+Table tooth_filling {
+  filling_id uuid     [pk]
+  tooth_id   uuid     [not null, ref: > tooth_record.tooth_id]
+  surfaces   jsonb    [not null, note: "list of surfaces e.g. [M, O]"]
+  material   filling_material_enum [not null, note: "composite | amalgam | gic | temporary"]
+  size_mm    decimal(5,2)
+  note       text
+  created_at timestamp [not null]
+}
+
+Table tooth_periodontal {
+  periodontal_id uuid       [pk]
+  tooth_id       uuid       [unique, not null, ref: - tooth_record.tooth_id]
+  mobility_grade mobility_grade_enum [note: "normal | M1 | M2 | M3"]
+  recession_mm   decimal(5,2)
+  note           varchar(255)
+  created_at     timestamp  [not null]
+}
+
+Table tooth_vitality {
+  vitality_id        uuid  [pk]
+  tooth_id           uuid  [unique, not null, ref: - tooth_record.tooth_id]
+  pulp_status        text
+  ept_result         ept_result_enum      [note: "positive | negative"]
+  root_canal_treated root_canal_treated_enum [note: "no | medicated | incomplete | completed"]
+  note               text
+  created_at         timestamp [not null]
+}
+
+Table tooth_restoration {
+  restoration_id   uuid  [pk]
+  tooth_id         uuid  [unique, not null, ref: - tooth_record.tooth_id]
+  restoration_type restoration_type_enum [not null, note: "crown | bridge | veneer | onlay | overlay | post_and_core | vonlay"]
+  material         restoration_material_enum [note: "zirconia | lithium_disilicate | full_metal | pfm | pfz | emax"]
+  post_type        post_type_enum [note: "metal_post | fiber_post"]
+  note             text
+  created_at       timestamp [not null]
+}
+
+Table tooth_implant {
+  implant_id     uuid  [pk]
+  tooth_id       uuid  [unique, not null, ref: - tooth_record.tooth_id]
+  component_type implant_component_enum [not null, note: "crown | bridge | healing_abutment | cover_screw"]
+  retention_type retention_type_enum    [note: "cement_retained | screw_retained"]
+  material       restoration_material_enum
+  brand          varchar(100)
+  crown_brand    varchar(100)
+  note           text
+  created_at     timestamp [not null]
+}
+
+Table tooth_edentulous {
+  edentulous_id   uuid  [pk]
+  tooth_id        uuid  [unique, not null, ref: - tooth_record.tooth_id]
+  edentulous_type edentulous_type_enum [not null, note: "missing | extraction | embedded | impacted"]
+  note            text
+  created_at      timestamp [not null]
+}

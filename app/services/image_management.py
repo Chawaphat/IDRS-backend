@@ -11,7 +11,16 @@ from app.models.image_management import ImageManagement, ImageManagementCreate, 
 
 
 def create_image_management(session: Session, chart_id: uuid.UUID, payload: ImageManagementCreate) -> ImageManagement:
-    item = ImageManagement.model_validate({**payload.model_dump(), "chart_id": chart_id})
+    from app.models.dental_chart import DentalChart
+
+    if not chart_id or not session.get(DentalChart, chart_id):
+        raise HTTPException(status_code=404, detail="Dental chart not found")
+
+    # file_size is upload metadata validated on the Create schema; it is not
+    # a column on image_management.
+    item = ImageManagement.model_validate(
+        {**payload.model_dump(exclude={"file_size"}), "chart_id": chart_id}
+    )
     session.add(item)
     session.commit()
     session.refresh(item)
