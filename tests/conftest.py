@@ -1,4 +1,5 @@
 """Shared pytest fixtures for all service tests."""
+import importlib.util
 import sys
 import uuid
 from datetime import date, datetime
@@ -7,38 +8,79 @@ from unittest.mock import MagicMock
 
 import pytest
 
+
 # ---------------------------------------------------------------------------
-# Stub out optional heavy dependencies before any app module is imported.
-# This lets tests run without a live Supabase connection.
+# Stand in for optional heavy dependencies that are not installed, so the
+# suite runs without a live Supabase connection or the ML stack.
+#
+# A stub is only ever installed when the real package is genuinely missing —
+# never let a stub shadow something that is actually importable, or the tests
+# would silently exercise a fake numpy/torch on a machine that has the real one.
 # ---------------------------------------------------------------------------
 def _make_stub(name: str) -> ModuleType:
     mod = ModuleType(name)
     sys.modules[name] = mod
     return mod
 
-if "supabase" not in sys.modules:
-    _supabase = _make_stub("supabase")
+
+def _is_installed(name: str) -> bool:
+    if name in sys.modules:
+        return True
+    try:
+        return importlib.util.find_spec(name) is not None
+    except (ImportError, ValueError):
+        return False
+
+
+def _stub_if_missing(name: str) -> ModuleType | None:
+    """Return a fresh stub for `name`, or None when the real package exists."""
+    return None if _is_installed(name) else _make_stub(name)
+
+
+_supabase = _stub_if_missing("supabase")
+if _supabase is not None:
     _supabase.create_client = MagicMock()
     _supabase.Client = MagicMock()
 
-if "supabase_auth" not in sys.modules:
-    _sb_auth = _make_stub("supabase_auth")
+_sb_auth = _stub_if_missing("supabase_auth")
+if _sb_auth is not None:
     _sb_auth.Session = MagicMock()  # used as a type-hint in authen.py
 
 # The AI inference stack (torch / numpy / requests / pillow) is only needed to
 # actually run the Dentex model. Service-layer unit tests mock
-# `ai_inference.predict`, so stub the heavy imports to keep the suite runnable
-# on a machine without the ML dependencies installed.
-for _heavy in ("numpy", "requests", "torch"):
-    if _heavy not in sys.modules:
-        _make_stub(_heavy)
+# `ai_inference.predict`, so stub whichever of these are absent and keep the
+# suite runnable on a machine without the ML dependencies.
+#
+# Record this before stubbing: once a torch stub is in sys.modules, torch
+# looks "installed" to any later check.
+_TORCH_INSTALLED = _is_installed("torch")
 
-if "PIL" not in sys.modules:
-    _pil = _make_stub("PIL")
-    _pil_image = _make_stub("PIL.Image")
-    _pil.Image = _pil_image
+for _heavy in ("requests", "torch"):
+    _stub_if_missing(_heavy)
 
-if "app.ai_models.seunet_arch" not in sys.modules:
+_numpy = _stub_if_missing("numpy")
+if _numpy is not None:
+
+    class _AbsentType:
+        """A type nothing is ever an instance of."""
+
+    # pytest.approx introspects sys.modules["numpy"] on *every* comparison
+    # (np.isscalar, np.ndarray, np.bool_, ...). Answering each probe with a
+    # type that matches nothing makes approx() fall back to plain scalar
+    # comparison instead of raising AttributeError.
+    _numpy.isscalar = lambda obj: isinstance(
+        obj, (int, float, complex, bool, str, bytes)
+    )
+    _numpy.__getattr__ = lambda name: _AbsentType
+
+_pil = _stub_if_missing("PIL")
+if _pil is not None:
+    _pil.Image = _make_stub("PIL.Image")
+
+# seunet_arch is a real file in this repo, so find_spec always locates it — but
+# it imports torch at module level, so it only *loads* once torch is installed.
+# Key the stub off torch rather than off the file existing.
+if not _TORCH_INSTALLED and "app.ai_models.seunet_arch" not in sys.modules:
     _seunet = _make_stub("app.ai_models.seunet_arch")
     _seunet.SEUNet = MagicMock()
 
