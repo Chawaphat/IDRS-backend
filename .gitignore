@@ -52,3 +52,7 @@ htmlcov/
 # (see app/ai_models/README.md)
 app/ai_models/weights/*.pt
 app/ai_models/weights/*.pth
+
+# AI model evaluation output
+evaluation/results/
+evaluation/testdataset/
