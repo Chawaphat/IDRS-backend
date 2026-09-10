@@ -1,6 +1,6 @@
 # AI Model Evaluation
 
-> 🇹🇭 อ่านคำอธิบายภาษาไทยว่าการประเมินนี้ทำอะไรบ้างได้ที่ [`GUIDE.th.md`](GUIDE.th.md)
+> 🇹🇭 คำอธิบายภาษาไทย: [`GUIDE.th.md`](GUIDE.th.md) (ภาพรวม) · [`THRESHOLDS.th.md`](THRESHOLDS.th.md) (ที่มาของเกณฑ์แต่ละตัว)
 
 Implements **Test Plan v0.2.0, Chapter 5** — evaluating the deployed
 `DentexSegAndDet v1.0` pipeline (`app/services/ai_inference.py`) against the
