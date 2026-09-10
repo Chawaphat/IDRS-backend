@@ -2,7 +2,7 @@ from __future__ import annotations
 
 import uuid
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlmodel import Session
 
 from app.core.database import get_session
@@ -24,10 +24,11 @@ def create_image_management_endpoint(
 ) -> ImageManagement:
     try:
         return create_image_management(session, chart_id, payload)
+    except HTTPException:
+        raise  # let the service's own 404 (missing chart) etc. through unchanged
     except Exception as e:
         import traceback
         traceback.print_exc()
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.get("", response_model=list[ImageManagement])
@@ -39,10 +40,11 @@ def get_image_management_signed_endpoint(
 ) -> list[ImageManagement]:
     try:
         return get_all_image_management_signed(session, chart_id=chart_id, skip=skip, limit=limit)
+    except HTTPException:
+        raise
     except Exception as e:
         import traceback
         traceback.print_exc()
-        from fastapi import HTTPException
         raise HTTPException(status_code=400, detail=str(e))
 
 @router.put("/{image_id}", response_model=ImageManagement)
