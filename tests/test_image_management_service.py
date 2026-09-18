@@ -7,6 +7,7 @@ IDRS_Test Plan_V.0.2.0 — Chapter 3.1 "Image Management Module":
   UTC-36 : Create Image Record          -> create_image_management()
   UTC-37 : View Image List (Signed URLs) -> get_all_image_management_signed()
   UTC-38 : Delete Image Record          -> delete_image_management()
+  UTC-41 : Update Image Record          -> update_image_management()
 
 Layer: service-layer only — the DB Session is a MagicMock and Supabase
 `get_signed_url` is patched.
@@ -27,7 +28,7 @@ from fastapi import HTTPException
 import pydantic
 
 from app.models.enums import ImageCategory
-from app.models.image_management import ImageManagement, ImageManagementCreate
+from app.models.image_management import ImageManagement, ImageManagementCreate, ImageManagementUpdate
 from app.services import image_management as svc
 
 
@@ -203,4 +204,51 @@ class TestDeleteImageRecord:
         assert exc.value.status_code == 404
         assert exc.value.detail == "Image not found"
         mock_session.delete.assert_not_called()
+        mock_session.commit.assert_not_called()
+
+
+# ===========================================================================
+# UTC-41 : Update Image Record
+# ===========================================================================
+class TestUpdateImageRecord:
+
+    def test_utc_41_tc_01_update_description_of_existing_image(self, mock_session):
+        """Success: update the description of an existing image record."""
+        image = make_image(image_id=IMAGE_ID, description="old")
+        mock_session.get.return_value = image
+        payload = ImageManagementUpdate(description="Post-op review photo")
+
+        result = svc.update_image_management(mock_session, IMAGE_ID, payload)
+
+        assert result.description == "Post-op review photo"
+        assert result.image_type == ImageCategory.panoramic_xray  # untouched
+        mock_session.add.assert_called_once()
+        mock_session.commit.assert_called_once()
+
+    def test_utc_41_tc_02_partial_update_leaves_other_fields_unchanged(self, mock_session):
+        """Success: a partial payload only changes the fields it sets."""
+        image = make_image(image_id=IMAGE_ID, image_file="abc.jpg", description="keep me")
+        mock_session.get.return_value = image
+
+        result = svc.update_image_management(
+            mock_session, IMAGE_ID, ImageManagementUpdate(image_type=ImageCategory.other)
+        )
+
+        assert result.image_type == ImageCategory.other
+        assert result.image_file == "abc.jpg"      # unchanged
+        assert result.description == "keep me"     # unchanged
+        mock_session.commit.assert_called_once()
+
+    def test_utc_41_tc_03_update_nonexistent_image(self, mock_session):
+        """Failure: image_id does not exist -> HTTPException(404, 'Image not found')."""
+        mock_session.get.return_value = None
+
+        with pytest.raises(HTTPException) as exc:
+            svc.update_image_management(
+                mock_session, NONEXISTENT_IMAGE_ID, ImageManagementUpdate(description="x")
+            )
+
+        assert exc.value.status_code == 404
+        assert exc.value.detail == "Image not found"
+        mock_session.add.assert_not_called()
         mock_session.commit.assert_not_called()
