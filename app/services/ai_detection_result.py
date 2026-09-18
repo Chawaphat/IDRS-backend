@@ -29,7 +29,10 @@ def create_ai_detection_result(
     # image_file (storage path) — fall back to a fresh signed URL.
     image_source = image.image_url or get_signed_url(f"{image.image_type.value}/{image.image_file}")
 
-    output = ai_inference.predict(image_source)
+    try:
+        output = ai_inference.predict(image_source)
+    except Exception as exc:
+        raise HTTPException(status_code=502, detail="AI model inference failed") from exc
 
     # Everything the model returned (per-finding detections + full per-tooth
     # breakdown incl. healthy teeth) lives in detection_data — there is no

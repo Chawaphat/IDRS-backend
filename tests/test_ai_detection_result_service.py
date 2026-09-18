@@ -114,6 +114,21 @@ class TestRunAIDetection:
         predict.assert_not_called()
         mock_session.commit.assert_not_called()
 
+    def test_utc_41_tc_04_ai_model_inference_fails(self, mock_session, monkeypatch):
+        """Failure: ai_inference.predict() raises -> HTTPException(502); nothing is saved."""
+        mock_session.get.return_value = make_image()
+
+        predict = MagicMock(side_effect=RuntimeError("model crashed"))
+        monkeypatch.setattr(svc.ai_inference, "predict", predict)
+
+        with pytest.raises(HTTPException) as exc:
+            svc.create_ai_detection_result(mock_session, IMAGE_ID, make_payload())
+
+        assert exc.value.status_code == 502
+        assert exc.value.detail == "AI model inference failed"
+        mock_session.add.assert_not_called()
+        mock_session.commit.assert_not_called()
+
 
 # ===========================================================================
 # UTC-42 : View AI Detection Results
