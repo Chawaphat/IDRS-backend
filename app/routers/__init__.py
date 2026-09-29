@@ -18,6 +18,7 @@ from app.routers.occlusal_analyses import (
 )
 from app.routers.occlusal_contact import router as occlusal_contacts_router
 from app.routers.patients import router as patients_router
+from app.routers.pdf_export import router as pdf_export_router
 from app.routers.profiles import router as profiles_router
 from app.routers.vdo_evaluations import (
 	router as vdo_evaluations_router,
@@ -50,6 +51,7 @@ __all__ = [
 	"occlusal_analyses_admin_router",
 	"occlusal_contacts_router",
 	"patients_router",
+	"pdf_export_router",
 	"profiles_router",
 	"vdo_evaluations_router",
 	"vdo_evaluations_admin_router",

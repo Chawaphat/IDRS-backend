@@ -8,6 +8,7 @@ from sqlmodel import Session, select
 from app.models.dental_chart import DentalChart
 from app.models.occlusal_analysis import OcclusalAnalysis
 from app.models.occlusal_contact import OcclusalContact, OcclusalContactBulkCreate
+from app.services.occlusal_analysis import get_occlusal_analysis_by_chart_id
 
 
 
@@ -44,6 +45,22 @@ def create_and_replace_occlusal_contacts(
     session.add_all(items)
     session.commit()
     return items 
+
+
+def get_occlusal_contacts_by_chart_id(
+    session: Session,
+    chart_id: uuid.UUID,
+) -> list[OcclusalContact]:
+    try:
+        occlusal = get_occlusal_analysis_by_chart_id(session, chart_id)
+    except HTTPException as exc:
+        if exc.status_code == 404:
+            return []
+        raise
+
+    return list(session.exec(
+        select(OcclusalContact).where(OcclusalContact.occlusal_id == occlusal.occlusal_id)
+    ).all())
 
 def delete_occlusal_contact(session: Session, contact_id: uuid.UUID) -> None:
     item = session.get(OcclusalContact, contact_id)

@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 from app.core.database import create_db_and_tables
-from app.core.authen import get_current_profile, require_admin, require_chart_editor
+from app.core.authen import  require_admin, require_chart_editor, require_chart_owner, require_profile_owner
 from app.routers import (
     auth_router,
     ai_analysis_router,
@@ -22,6 +22,7 @@ from app.routers import (
     occlusal_analyses_admin_router,
     occlusal_contacts_router,
     patients_router,
+    pdf_export_router,
     profiles_router,
     vdo_evaluations_router,
     vdo_evaluations_admin_router,
@@ -85,6 +86,13 @@ app.include_router(
     prefix="/dental-charts", 
     tags=["dental-charts"],
     dependencies=[Depends(require_chart_editor)]
+)
+
+app.include_router(
+    pdf_export_router,
+    prefix="/dental-charts/{chart_id}/export-data",
+    tags=["pdf-export"],
+    dependencies=[Depends(require_chart_owner)]
 )
 
 app.include_router(

@@ -39,6 +39,7 @@ engine = create_engine(
 
 def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
+    ensure_medical_history_schema()
     ensure_occlusal_analysis_schema()
     ensure_residual_ridge_assessment_schema()
 
@@ -63,6 +64,25 @@ def _add_missing_columns(table_name: str, required: dict[str, str]) -> None:
         conn.execute(text("SET LOCAL statement_timeout = 0"))
         for col, typ in missing.items():
             conn.execute(text(f"ALTER TABLE {table_name} ADD COLUMN {col} {typ}"))
+
+
+def _add_missing_enum_values(enum_name: str, values: tuple[str, ...]) -> None:
+    with engine.begin() as conn:
+        for value in values:
+            escaped = value.replace("'", "''")
+            conn.execute(text(f"ALTER TYPE {enum_name} ADD VALUE IF NOT EXISTS '{escaped}'"))
+
+
+def ensure_medical_history_schema() -> None:
+    if engine.dialect.name != "postgresql":
+        return
+
+    # Existing databases may have been created before "others" was part of
+    # patient_expectations_type, which breaks ARRAY enum updates.
+    _add_missing_enum_values(
+        "patient_expectations_type",
+        ("chewing", "esthetic", "health", "phonetics", "others"),
+    )
 
 
 def ensure_occlusal_analysis_schema() -> None:
