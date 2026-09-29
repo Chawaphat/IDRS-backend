@@ -36,10 +36,17 @@ def get_image_management_signed_endpoint(
     chart_id: uuid.UUID,
     skip: int = Query(default=0, ge=0),
     limit: int = Query(default=100, ge=1, le=1000),
+    refresh_urls: bool = Query(default=False),
     session: Session = Depends(get_session),
 ) -> list[ImageManagement]:
     try:
-        return get_all_image_management_signed(session, chart_id=chart_id, skip=skip, limit=limit)
+        return get_all_image_management_signed(
+            session,
+            chart_id=chart_id,
+            skip=skip,
+            limit=limit,
+            force_refresh=refresh_urls,
+        )
     except HTTPException:
         raise
     except Exception as e:

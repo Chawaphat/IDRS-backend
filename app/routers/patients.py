@@ -18,6 +18,8 @@ from app.services.patient import (
     update_patient,
     search_patients,
 )
+from app.services.image_management import get_all_patient_image_management_signed
+from app.models.image_management import ImageManagement
 from app.models.patient import Patient, PatientCreate, PatientUpdate, PatientWithClinicalSummary
 
 router = APIRouter()
@@ -56,6 +58,20 @@ def get_patient_by_id_endpoint(
     current_user: Profile = Depends(get_current_profile),
 ) -> Patient:
     return get_patient_by_id(session, patient_id, current_user.id)
+
+@router.get("/{patient_id}/images", response_model=list[ImageManagement])
+def get_patient_images_endpoint(
+    patient_id: uuid.UUID,
+    refresh_urls: bool = Query(default=False),
+    session: Session = Depends(get_session),
+    current_user: Profile = Depends(get_current_profile),
+) -> list[ImageManagement]:
+    get_patient_by_id(session, patient_id, current_user.id)
+    return get_all_patient_image_management_signed(
+        session,
+        patient_id=patient_id,
+        force_refresh=refresh_urls,
+    )
 
 @router.get("/{patient_id}/dental-charts", response_model=list[DentalChart])
 def get_patient_dental_charts_endpoint(

@@ -131,13 +131,14 @@ class TestGetAllPatients:
 
         mock_session.exec.side_effect = [
             MagicMock(all=MagicMock(return_value=[patient])),
-            MagicMock(first=MagicMock(return_value=chart)),
-            MagicMock(first=MagicMock(return_value=None)),
+            MagicMock(all=MagicMock(return_value=[chart])),
+            MagicMock(all=MagicMock(return_value=[])),
         ]
 
         results = get_all_patients(mock_session, DENTIST_ID)
 
         mock_session.exec.assert_called() 
+        assert mock_session.exec.call_count == 3
         assert len(results) == 1
         assert results[0].patient_id == PATIENT_ID
         assert results[0].status == "Active"
@@ -412,11 +413,12 @@ class TestSearchPatients:
 
         mock_session.exec.side_effect = [
             MagicMock(all=MagicMock(return_value=[patient])),
-            MagicMock(first=MagicMock(return_value=chart)),
-            MagicMock(first=MagicMock(return_value=None)),
+            MagicMock(all=MagicMock(return_value=[chart])),
+            MagicMock(all=MagicMock(return_value=[])),
         ]
 
         results = search_patients(mock_session, "john", DENTIST_ID)
+        assert mock_session.exec.call_count == 3
         assert len(results) == 1
         assert "John" in results[0].name
 
@@ -429,8 +431,8 @@ class TestSearchPatients:
 
         mock_session.exec.side_effect = [
             MagicMock(all=MagicMock(return_value=[patient])),
-            MagicMock(first=MagicMock(return_value=chart)),
-            MagicMock(first=MagicMock(return_value=None)),
+            MagicMock(all=MagicMock(return_value=[chart])),
+            MagicMock(all=MagicMock(return_value=[])),
         ]
 
         results = search_patients(mock_session, "HN001", DENTIST_ID)
@@ -458,7 +460,6 @@ class TestGetPatientDentalCharts:
 
         chart = make_chart(chart_id=CHART_ID, patient_id=PATIENT_ID)
         exec_result = MagicMock(
-            first=MagicMock(return_value=chart),
             all=MagicMock(return_value=[chart]),
         )
         mock_session.exec.return_value = exec_result

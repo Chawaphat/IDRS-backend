@@ -163,6 +163,41 @@ class TestViewImageListSigned:
         with pytest.raises(Exception, match="Failed to generate signed URL"):
             svc.get_all_image_management_signed(mock_session, CHART_ID, skip=0, limit=100)
 
+    def test_signed_url_is_reused_before_expiry(self, monkeypatch):
+        """A repeated request for the same path does not call Supabase twice."""
+        supabase = MagicMock()
+        supabase.storage.from_().create_signed_url.return_value = {
+            "signedURL": "https://signed.url/a.jpg"
+        }
+        monkeypatch.setattr(svc, "get_supabase", lambda: supabase)
+        monkeypatch.setenv("SUPABASE_BUCKET", "images")
+        svc._signed_url_cache.clear()
+
+        assert svc.get_signed_url("panoramic_xray/a.jpg") == "https://signed.url/a.jpg"
+        assert svc.get_signed_url("panoramic_xray/a.jpg") == "https://signed.url/a.jpg"
+
+        supabase.storage.from_().create_signed_url.assert_called_once_with(
+            "panoramic_xray/a.jpg", svc.EXPIRES_IN
+        )
+
+    def test_signed_url_force_refresh_bypasses_cache(self, monkeypatch):
+        """An image-load retry must obtain a new signed URL from Supabase."""
+        supabase = MagicMock()
+        supabase.storage.from_().create_signed_url.side_effect = [
+            {"signedURL": "https://signed.url/old.jpg"},
+            {"signedURL": "https://signed.url/new.jpg"},
+        ]
+        monkeypatch.setattr(svc, "get_supabase", lambda: supabase)
+        monkeypatch.setenv("SUPABASE_BUCKET", "images")
+        svc._signed_url_cache.clear()
+
+        assert svc.get_signed_url("panoramic_xray/a.jpg") == "https://signed.url/old.jpg"
+        assert svc.get_signed_url(
+            "panoramic_xray/a.jpg", force_refresh=True
+        ) == "https://signed.url/new.jpg"
+
+        assert supabase.storage.from_().create_signed_url.call_count == 2
+
 
 # ===========================================================================
 # UTC-38 : Delete Image Record
