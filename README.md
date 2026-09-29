@@ -20,3 +20,16 @@ FastAPI backend for the IDRS system. Provides REST APIs for dental charts, evalu
 
 ## Notes
 - Database tables are created on startup via SQLModel metadata.
+
+## Performance
+- The patient list and search endpoints load patient summaries with a fixed
+	number of database queries, rather than one query per patient.
+- Startup creates PostgreSQL indexes for common patient, chart, image, AI, and
+	dental-status lookup paths. Existing deployments receive them automatically
+	when the backend starts; run a deployment during a low-traffic window for a
+	large database because index creation can take time.
+- Image signed URLs are cached in the backend process for 23 hours. The source
+	URL itself is not stored, and a fresh URL is generated before the 24-hour
+	Supabase expiry.
+- List endpoints support `skip` and `limit`. Keep `limit` modest for responsive
+	UI requests.

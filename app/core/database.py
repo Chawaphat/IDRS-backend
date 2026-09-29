@@ -41,6 +41,33 @@ def create_db_and_tables() -> None:
     SQLModel.metadata.create_all(engine)
     ensure_occlusal_analysis_schema()
     ensure_residual_ridge_assessment_schema()
+    ensure_performance_indexes()
+
+
+def ensure_performance_indexes() -> None:
+    """Create indexes for the API's common foreign-key lookups and ordering."""
+    if engine.dialect.name != "postgresql":
+        return
+
+    index_statements = (
+        "CREATE INDEX IF NOT EXISTS idx_patients_dentist_id ON patients (dentist_id)",
+        "CREATE INDEX IF NOT EXISTS idx_dental_charts_patient_record_date ON dental_charts (patient_id, record_date DESC)",
+        "CREATE INDEX IF NOT EXISTS idx_dental_charts_dentist_id ON dental_charts (dentist_id)",
+        "CREATE INDEX IF NOT EXISTS idx_image_management_chart_id ON image_management (chart_id)",
+        "CREATE INDEX IF NOT EXISTS idx_ai_detection_analysis_image_id ON ai_detection_analysis (image_id)",
+        "CREATE INDEX IF NOT EXISTS idx_dental_status_chart_id ON dental_status (chart_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_record_status_id ON tooth_record (status_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_edentulous_tooth_id ON tooth_edentulous (tooth_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_caries_tooth_id ON tooth_caries (tooth_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_filling_tooth_id ON tooth_filling (tooth_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_periodontal_tooth_id ON tooth_periodontal (tooth_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_vitality_tooth_id ON tooth_vitality (tooth_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_restoration_tooth_id ON tooth_restoration (tooth_id)",
+        "CREATE INDEX IF NOT EXISTS idx_tooth_implant_tooth_id ON tooth_implant (tooth_id)",
+    )
+    with engine.begin() as conn:
+        for statement in index_statements:
+            conn.execute(text(statement))
 
 
 def _get_existing_columns(table_name: str) -> set[str]:

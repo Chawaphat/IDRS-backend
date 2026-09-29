@@ -5,7 +5,7 @@ from datetime import datetime
 
 from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
-from sqlmodel import Session, select ,or_
+from sqlmodel import Session, select, or_
 
 from app.models.dental_chart import DentalChart
 from app.models.patient import Patient, PatientCreate, PatientUpdate, PatientWithClinicalSummary
@@ -49,42 +49,71 @@ def get_patient_by_id(session: Session, patient_id: uuid.UUID, dentist_id: uuid.
 
 def get_patient_dental_charts(session: Session, patient_id: uuid.UUID) -> list[DentalChart]:
     statement = select(DentalChart).where(DentalChart.patient_id == patient_id)
-    if not session.exec(statement).first():
+    charts = list(session.exec(statement).all())
+    if not charts:
         raise HTTPException(status_code=404, detail="Dental charts not found for this patient")
-    return list(session.exec(statement).all())
+    return charts
 
 from app.models.medical_histories import MedicalHistory
 
-def get_all_patients(session: Session, dentist_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[PatientWithClinicalSummary]:
-    statement = select(Patient).where(Patient.dentist_id == dentist_id).offset(skip).limit(limit)
-    patients = session.exec(statement).all()
-    
+def _with_clinical_summaries(
+    session: Session,
+    patients: list[Patient],
+) -> list[PatientWithClinicalSummary]:
+    if not patients:
+        return []
+
+    patient_ids = [patient.patient_id for patient in patients]
+    charts = list(session.exec(
+        select(DentalChart)
+        .where(DentalChart.patient_id.in_(patient_ids))
+        .order_by(DentalChart.record_date.desc())
+    ).all())
+
+    latest_charts: dict[uuid.UUID, DentalChart] = {}
+    for chart in charts:
+        latest_charts.setdefault(chart.patient_id, chart)
+
+    chart_ids = [chart.chart_id for chart in latest_charts.values()]
+    histories_by_chart_id: dict[uuid.UUID, MedicalHistory] = {}
+    if chart_ids:
+        histories_by_chart_id = {
+            history.chart_id: history
+            for history in session.exec(
+                select(MedicalHistory).where(MedicalHistory.chart_id.in_(chart_ids))
+            ).all()
+        }
+
     results = []
-    for p in patients:
-        chart_stmt = select(DentalChart).where(DentalChart.patient_id == p.patient_id).order_by(DentalChart.record_date.desc())
-        latest_chart = session.exec(chart_stmt).first()
-        
-        last_visit = latest_chart.record_date if latest_chart else None
-        chief_complaint = None
-        
-        if latest_chart:
-            mh_stmt = select(MedicalHistory).where(MedicalHistory.chart_id == latest_chart.chart_id)
-            mh = session.exec(mh_stmt).first()
-            if mh:
-                chief_complaint = mh.chief_complaint
-                if mh.allergy_status == "yes" and mh.allergy_detail:
-                    p.allergy = mh.allergy_detail
-                elif mh.allergy_status in ["no", "dont_know"]:
-                    p.allergy = None
-                
+    for patient in patients:
+        latest_chart = latest_charts.get(patient.patient_id)
+        history = (
+            histories_by_chart_id.get(latest_chart.chart_id)
+            if latest_chart else None
+        )
+        patient_data = patient.model_dump()
+
+        if history:
+            if history.allergy_status == "yes" and history.allergy_detail:
+                patient_data["allergy"] = history.allergy_detail
+            elif history.allergy_status in ["no", "dont_know"]:
+                patient_data["allergy"] = None
+
         results.append(PatientWithClinicalSummary(
-            **p.model_dump(),
-            last_visit=last_visit,
-            chief_complaint=chief_complaint,
-            status="Active"
+            **patient_data,
+            last_visit=latest_chart.record_date if latest_chart else None,
+            chief_complaint=history.chief_complaint if history else None,
+            status="Active",
         ))
+
     results.sort(key=_activity_sort_key, reverse=True)
     return results
+
+
+def get_all_patients(session: Session, dentist_id: uuid.UUID, skip: int = 0, limit: int = 100) -> list[PatientWithClinicalSummary]:
+    statement = select(Patient).where(Patient.dentist_id == dentist_id).offset(skip).limit(limit)
+    patients = list(session.exec(statement).all())
+    return _with_clinical_summaries(session, patients)
 
 
 def update_patient(session: Session, patient_id: uuid.UUID, payload: PatientUpdate, dentist_id: uuid.UUID) -> Patient:
@@ -123,31 +152,5 @@ def search_patients(
         .offset(skip)
         .limit(limit)
     )
-    patients = session.exec(statement).all()
-    
-    results = []
-    for p in patients:
-        chart_stmt = select(DentalChart).where(DentalChart.patient_id == p.patient_id).order_by(DentalChart.record_date.desc())
-        latest_chart = session.exec(chart_stmt).first()
-        
-        last_visit = latest_chart.record_date if latest_chart else None
-        chief_complaint = None
-        
-        if latest_chart:
-            mh_stmt = select(MedicalHistory).where(MedicalHistory.chart_id == latest_chart.chart_id)
-            mh = session.exec(mh_stmt).first()
-            if mh:
-                chief_complaint = mh.chief_complaint
-                if mh.allergy_status == "yes" and mh.allergy_detail:
-                    p.allergy = mh.allergy_detail
-                elif mh.allergy_status in ["no", "dont_know"]:
-                    p.allergy = None
-                
-        results.append(PatientWithClinicalSummary(
-            **p.model_dump(),
-            last_visit=last_visit,
-            chief_complaint=chief_complaint,
-            status="Active"
-        ))
-    results.sort(key=_activity_sort_key, reverse=True)
-    return results
+    patients = list(session.exec(statement).all())
+    return _with_clinical_summaries(session, patients)
