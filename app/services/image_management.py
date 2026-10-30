@@ -100,10 +100,15 @@ def get_all_image_management_signed(
     session: Session,
     chart_id: uuid.UUID,
     skip: int = 0,
-    limit: int = 100,
+    limit: int | None = 100,
     force_refresh: bool = False,
 ) -> list[dict[str, Any]]:
-    statement = select(ImageManagement).where(ImageManagement.chart_id == chart_id).offset(skip).limit(limit)
+    statement = (select(ImageManagement)
+        .where(ImageManagement.chart_id == chart_id)
+        .order_by(ImageManagement.uploaded_at, ImageManagement.image_id)
+        .offset(skip))
+    if limit is not None:
+        statement = statement.limit(limit)
     items = list(session.exec(statement).all())
     
     with ThreadPoolExecutor(max_workers=5) as executor:

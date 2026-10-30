@@ -287,3 +287,16 @@ class TestUpdateImageRecord:
         assert exc.value.detail == "Image not found"
         mock_session.add.assert_not_called()
         mock_session.commit.assert_not_called()
+
+
+def test_export_image_query_has_no_limit_but_gallery_keeps_pagination(mock_session):
+    from app.services.image_management import get_all_image_management_signed
+
+    mock_session.exec.return_value.all.return_value = []
+    get_all_image_management_signed(mock_session, uuid.uuid4(), limit=None)
+    export_query = mock_session.exec.call_args.args[0]
+    assert export_query._limit_clause is None
+
+    get_all_image_management_signed(mock_session, uuid.uuid4())
+    gallery_query = mock_session.exec.call_args.args[0]
+    assert gallery_query._limit_clause.value == 100

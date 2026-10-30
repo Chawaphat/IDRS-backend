@@ -90,6 +90,6 @@ def get_chart_export_data(
         residual_ridge_assessment=residual_ridge_assessment,
         occlusal_analysis=occlusal_analysis,
         occlusal_contacts=get_occlusal_contacts_by_chart_id(session, chart_id),
-        images=get_all_image_management_signed(session, chart_id),
+        images=get_all_image_management_signed(session, chart_id, limit=None),
         dental_status=dental_status,
     )

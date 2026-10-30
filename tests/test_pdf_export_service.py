@@ -60,7 +60,11 @@ class TestGetChartExportData:
             lambda session, patient_id, dentist_id: patient,
         )
         monkeypatch.setattr(pdf_export, "get_occlusal_contacts_by_chart_id", lambda session, chart_id: [])
-        monkeypatch.setattr(pdf_export, "get_all_image_management_signed", lambda session, chart_id: [image])
+        images = [image] + [make_image(image_id=uuid.uuid4()) for _ in range(104)]
+        def load_images(session, chart_id, *, limit=100):
+            assert limit is None, "PDF export must request every chart image"
+            return images
+        monkeypatch.setattr(pdf_export, "get_all_image_management_signed", load_images)
         _patch_optional_sections_to_missing(pdf_export, monkeypatch)
 
         result = pdf_export.get_chart_export_data(mock_session, CHART_ID)
@@ -75,7 +79,7 @@ class TestGetChartExportData:
         assert result.occlusal_analysis is None
         assert result.occlusal_contacts == []
         assert result.dental_status is None
-        assert len(result.images) == 1
+        assert len(result.images) == 105
         assert result.images[0].image_id == IMAGE_ID
         assert result.images[0].image_url == "https://example.test/signed/intraoral/photo.jpg"
 
